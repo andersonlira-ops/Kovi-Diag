@@ -3486,14 +3486,20 @@ initHistDB();
 renderHistList();
 renderDashboard();
 document.getElementById('atend-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show');});
-  // AUTO-SYNC INICIAL PARA TODOS OS USUÁRIOS
-setTimeout(() => {
+ // AUTO-SYNC INICIAL PARA TODOS OS USUÁRIOS E ATUALIZAÇÃO DA TELA
+setTimeout(async () => {
   const cfg = getSBConfig();
-  if(cfg.url && cfg.key) {
-    // Testa silenciosamente se conecta e puxa os dados
-    syncFromSupabase(); 
+  // Só executa se tiver as chaves e não for o texto de exemplo
+  if(cfg.url && cfg.key && !cfg.url.includes('COLE_AQUI')) {
+    // Baixa os dados do Supabase e ESPERA terminar (await)
+    await syncFromSupabase();
+    
+    // Assim que terminar de baixar, força a tela inicial a se atualizar para mostrar os números!
+    if(document.getElementById('tab-home').classList.contains('active')){
+      renderDashboard();
+    }
   }
-}, 1000); // Espera 1 segundo após abrir a página para não travar o celular
+}, 1000);
 </script>
 </body>
 </html>
