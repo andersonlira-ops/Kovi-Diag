@@ -2461,7 +2461,17 @@ function statusLabel(s){
 ════════════════════════════════════════════ */
 
 /* ── Supabase helpers ── */
-function getSBConfig(){return JSON.parse(localStorage.getItem('kovi_sb_v11')||'{}');}
+function getSBConfig(){
+  const local = JSON.parse(localStorage.getItem('kovi_sb_v11')||'{}');
+  // Se o usuário não tiver configurado no Admin, usa o padrão para todos:
+  if(!local.url || !local.key) {
+    return {
+      url: 'https://uspmimhbhskuzxqwayxg.supabase.co',
+      key: 'sb_publishable_BkUikShBaJA1bznX9w4UsA_u5123xzv'
+    };
+  }
+  return local;
+}
 function saveSBConfig(c){localStorage.setItem('kovi_sb_v11',JSON.stringify(c));}
 function getSBHeaders(){const c=getSBConfig();return{'Content-Type':'application/json','apikey':c.key||'','Authorization':'Bearer '+(c.key||'')};}
 function sbUrl(path){const c=getSBConfig();return(c.url||'').replace(/\/$/,'')+path;}
@@ -3476,6 +3486,14 @@ initHistDB();
 renderHistList();
 renderDashboard();
 document.getElementById('atend-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show');});
+  // AUTO-SYNC INICIAL PARA TODOS OS USUÁRIOS
+setTimeout(() => {
+  const cfg = getSBConfig();
+  if(cfg.url && cfg.key) {
+    // Testa silenciosamente se conecta e puxa os dados
+    syncFromSupabase(); 
+  }
+}, 1000); // Espera 1 segundo após abrir a página para não travar o celular
 </script>
 </body>
 </html>
