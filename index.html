@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>KOVI // DIAG </title>
+<title>KOVI // DIAG v11</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -695,7 +695,7 @@ select.adm-input{cursor:pointer;}
 
 <!-- NAV -->
 <div id="nav">
-  <div class="logo"><span class="logo-kovi">KOVI</span><span class="logo-sep">//</span><span class="logo-diag">DIAG</span><span class="logo-ver"></span></div>
+  <div class="logo"><span class="logo-kovi">KOVI</span><span class="logo-sep">//</span><span class="logo-diag">DIAG</span><span class="logo-ver">v11</span></div>
   <div class="nav-tab active" data-tab="home" onclick="switchTab('home')">🏠 INÍCIO</div>
   <div class="nav-tab" data-tab="diag" onclick="switchTab('diag')">⚡ DIAGNÓSTICO</div>
   <div class="nav-tab" data-tab="esq" onclick="switchTab('esq')">◤ ESQUEMAS</div>
@@ -1599,7 +1599,7 @@ ${PRINT_FONTS}
 </div>
 ${bodyHTML}
 <div class="pr-footer"><span>KOVI // DIAG v11 — Confidencial</span><span>${now}</span></div>
-<script>window.onload=()=>setTimeout(()=>{window.print();},600);<\/script>
+<scr'+'ipt>window.onload=()=>setTimeout(()=>{window.print();},600);</scr'+'ipt>
 </body></html>`);
   w.document.close();
 }
@@ -2507,8 +2507,44 @@ function renderAdmin(){
       </div>
       <div class="adm-card">
         <div class="adm-card-title">🗄 Tabelas Supabase</div>
-        <p style="font-size:9px;color:var(--muted);line-height:1.9;margin-bottom:14px;">Execute os scripts SQL abaixo no painel do Supabase para criar as tabelas necessárias:</p>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:9px;color:var(--cyan);font-family:var(--mono);white-space:pre-wrap;line-height:1.8;max-height:220px;overflow-y:auto;">-- DTCs personalizados
+        <p style="font-size:9px;color:var(--muted);line-height:1.9;margin-bottom:10px;">
+          Seu banco já possui a tabela <code style="color:var(--cyan)">frota</code> com colunas <code style="color:var(--cyan)">placa, modelo_carro, carro</code>.<br/>
+          Execute os scripts abaixo para criar as demais tabelas necessárias:
+        </p>
+
+        <!-- Tab selector -->
+        <div style="display:flex;gap:4px;margin-bottom:8px;">
+          <button onclick="showSQL('sql-frota')" style="padding:3px 10px;border:1px solid var(--yellow);background:rgba(250,204,21,.1);color:var(--yellow);border-radius:3px;cursor:pointer;font-family:var(--mono);font-size:8px;letter-spacing:1px;">FROTA (existente)</button>
+          <button onclick="showSQL('sql-kovi')" style="padding:3px 10px;border:1px solid var(--border2);background:transparent;color:var(--muted);border-radius:3px;cursor:pointer;font-family:var(--mono);font-size:8px;letter-spacing:1px;">NOVAS TABELAS</button>
+          <button onclick="showSQL('sql-rls')" style="padding:3px 10px;border:1px solid var(--border2);background:transparent;color:var(--muted);border-radius:3px;cursor:pointer;font-family:var(--mono);font-size:8px;letter-spacing:1px;">RLS / CORS</button>
+        </div>
+
+        <div id="sql-frota" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:9px;color:var(--cyan);font-family:var(--mono);white-space:pre-wrap;line-height:1.8;max-height:220px;overflow-y:auto;">-- Sua tabela frota JÁ EXISTE. O app lê diretamente:
+-- SELECT placa, modelo_carro, carro FROM frota
+-- 
+-- Se quiser adicionar colunas extras sem quebrar nada:
+ALTER TABLE frota ADD COLUMN IF NOT EXISTS mfr TEXT;
+ALTER TABLE frota ADD COLUMN IF NOT EXISTS ano TEXT;
+ALTER TABLE frota ADD COLUMN IF NOT EXISTS estado TEXT;
+ALTER TABLE frota ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+
+-- Popular mfr a partir de modelo_carro (ex: "FIAT_ARGO..." → "FIAT"):
+UPDATE frota SET mfr = split_part(modelo_carro, '_', 1) WHERE mfr IS NULL;
+
+-- Índice para busca rápida por placa:
+CREATE UNIQUE INDEX IF NOT EXISTS idx_frota_placa ON frota(placa);</div>
+
+        <div id="sql-kovi" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:9px;color:var(--cyan);font-family:var(--mono);white-space:pre-wrap;line-height:1.8;max-height:220px;overflow-y:auto;">-- Tabela para placas do app (compatível com frota existente):
+CREATE TABLE IF NOT EXISTS kovi_placas (
+  placa TEXT PRIMARY KEY,
+  plate TEXT GENERATED ALWAYS AS (placa) STORED,
+  mfr TEXT, modelo TEXT, model TEXT,
+  label TEXT, carro TEXT,
+  ano TEXT, estado TEXT, state TEXT,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- DTCs personalizados:
 CREATE TABLE IF NOT EXISTS kovi_dtcs (
   code TEXT PRIMARY KEY,
   desc TEXT, expl TEXT,
@@ -2518,22 +2554,14 @@ CREATE TABLE IF NOT EXISTS kovi_dtcs (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Frota de veículos
-CREATE TABLE IF NOT EXISTS kovi_placas (
-  plate TEXT PRIMARY KEY,
-  model TEXT, mfr TEXT,
-  label TEXT, ano TEXT,
-  state TEXT, updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Técnicos
+-- Técnicos:
 CREATE TABLE IF NOT EXISTS kovi_techs (
   id TEXT PRIMARY KEY,
   name TEXT, plant TEXT,
   role TEXT, active BOOLEAN DEFAULT true
 );
 
--- Histórico (opcional - se quiser migrar)
+-- Histórico de atendimentos:
 CREATE TABLE IF NOT EXISTS kovi_historico (
   id TEXT PRIMARY KEY,
   plate TEXT, model TEXT,
@@ -2542,8 +2570,24 @@ CREATE TABLE IF NOT EXISTS kovi_historico (
   solution TEXT, km INT,
   status TEXT, created_at TIMESTAMPTZ DEFAULT now()
 );</div>
-        <div class="adm-btn-row">
-          <button class="adm-btn cyan" onclick="syncFromSupabase()">⬇ Sync da nuvem</button>
+
+        <div id="sql-rls" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:9px;color:var(--cyan);font-family:var(--mono);white-space:pre-wrap;line-height:1.8;max-height:220px;overflow-y:auto;">-- 1. Habilitar RLS nas tabelas (recomendado):
+ALTER TABLE frota ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kovi_dtcs ENABLE ROW LEVEL SECURITY;
+
+-- 2. Policy pública de leitura (para o app HTML):
+CREATE POLICY "allow_read" ON frota FOR SELECT USING (true);
+CREATE POLICY "allow_read" ON kovi_dtcs FOR SELECT USING (true);
+CREATE POLICY "allow_all" ON kovi_placas FOR ALL USING (true);
+CREATE POLICY "allow_all" ON kovi_techs FOR ALL USING (true);
+CREATE POLICY "allow_all" ON kovi_historico FOR ALL USING (true);
+
+-- 3. No Supabase Dashboard → Settings → API:
+--    Em "Allowed Origins" adicione: *  (ou o domínio do seu app)
+--    Isso resolve o erro de CORS no browser.</div>
+
+        <div class="adm-btn-row" style="margin-top:10px;">
+          <button class="adm-btn cyan" onclick="syncFromSupabase()">⬇ Sync da nuvem (frota → app)</button>
           <button class="adm-btn orange" onclick="syncToSupabase()">⬆ Sync para nuvem</button>
         </div>
         <div class="adm-status" id="sb-sync-status"></div>
@@ -2675,13 +2719,35 @@ CREATE TABLE IF NOT EXISTS kovi_historico (
         <div class="adm-status" id="pl-status"></div>
 
         <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px;">
-          <div style="font-size:8px;color:var(--yellow);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">📥 Importar em massa (CSV / JSON)</div>
+          <div style="font-size:8px;color:var(--yellow);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">📥 Importar em massa (CSV / JSON / Google Sheets)</div>
+
+          <!-- Google Sheets import -->
+          <div style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:10px;">
+            <div style="font-size:8px;color:var(--green);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">📊 Google Sheets (importação direta)</div>
+            <div style="font-size:9px;color:var(--muted);line-height:1.8;margin-bottom:8px;">
+              1. No Google Sheets: <b>Arquivo → Compartilhar → Publicar na web</b><br/>
+              2. Selecione a aba com os dados → Formato <b>CSV</b> → Clique em <b>Publicar</b><br/>
+              3. Cole a URL gerada abaixo:
+            </div>
+            <input class="adm-input" id="sheets-url" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv" style="margin-bottom:6px;font-size:10px;"/>
+            <div style="display:flex;gap:6px;">
+              <button class="adm-btn green" onclick="importFromSheets()" style="flex:1;">⬇ Importar do Sheets</button>
+              <button class="adm-btn cyan" onclick="importFromSBFrota()" style="flex:1;">☁ Importar da tabela frota (Supabase)</button>
+            </div>
+            <div class="adm-status" id="sheets-status"></div>
+          </div>
+
+          <!-- File upload -->
           <div class="adm-import-zone" onclick="document.getElementById('pl-import-file').click()">
             <div class="adm-import-icon">📂</div>
-            <div class="adm-import-txt">Clique para selecionar CSV ou JSON</div>
-            <div class="adm-import-hint">CSV: placa,montadora,modelo,label,ano,estado<br/>JSON: array de objetos</div>
+            <div class="adm-import-txt">Ou clique para selecionar arquivo CSV / JSON</div>
+            <div class="adm-import-hint">
+              Colunas aceitas: <b>placa, modelo_carro, carro</b> (formato do seu banco)<br/>
+              Também aceita: placa, montadora, modelo, label, ano, estado<br/>
+              Separador automático: vírgula, ponto-e-vírgula ou tabulação
+            </div>
           </div>
-          <input type="file" id="pl-import-file" accept=".csv,.json" class="hidden-file" onchange="importPlates(event)"/>
+          <input type="file" id="pl-import-file" accept=".csv,.json,.tsv" class="hidden-file" onchange="importPlates(event)"/>
           <div class="adm-prog" id="pl-prog" style="display:none"><div class="adm-prog-fill" id="pl-prog-fill" style="width:0%"></div></div>
           <div class="adm-status" id="pl-import-status"></div>
         </div>
@@ -2849,46 +2915,111 @@ async function testSBConn(){
   const url=document.getElementById('sb-url').value.trim();
   const key=document.getElementById('sb-key').value.trim();
   if(!url||!key){setAdmStatus('sb-conn-status','err','Preencha URL e chave primeiro.');return;}
+  // Save first so sbUrl() works
+  saveSBConfig({url,key});
   try{
-    const r=await fetch(url.replace(/\/$/,'')+'/rest/v1/kovi_dtcs?limit=1',{headers:{'apikey':key,'Authorization':'Bearer '+key}});
-    if(r.ok||r.status===406){SB_CONNECTED=true;setAdmStatus('sb-conn-status','ok','✓ Conexão bem-sucedida!');}
-    else{SB_CONNECTED=false;setAdmStatus('sb-conn-status','err','⚠ Erro HTTP '+r.status+' — verifique credenciais.');}
-  }catch(e){SB_CONNECTED=false;setAdmStatus('sb-conn-status','err','⚠ Erro de conexão: '+e.message);}
+    // Try the frota table first (their actual table), fallback to kovi_dtcs
+    const endpoint=url.replace(/\/$/,'');
+    const headers={'apikey':key,'Authorization':'Bearer '+key,'Content-Type':'application/json'};
+    // Test with their frota table
+    let r=await fetch(endpoint+'/rest/v1/frota?limit=1&select=placa',{headers});
+    if(!r.ok) r=await fetch(endpoint+'/rest/v1/kovi_dtcs?limit=1',{headers});
+    if(!r.ok) r=await fetch(endpoint+'/rest/v1/kovi_placas?limit=1',{headers});
+
+    const ok=r.ok||r.status===406||r.status===416;
+    SB_CONNECTED=ok;
+
+    // Update the static badge (re-render relevant parts)
+    const badge=document.getElementById('adm-sup-badge');
+    const connBox=document.getElementById('sup-conn-status');
+    if(badge)badge.innerHTML=ok
+      ?'<span style="color:var(--green)">● Supabase conectado</span>'
+      :'<span style="color:var(--red)">● Supabase desconectado</span>';
+    if(connBox){
+      connBox.className='adm-sup-status '+(ok?'connected':'disconnected');
+      connBox.innerHTML='<span>'+(ok?'✓ Conectado':'✗ Não conectado')+'</span>';
+    }
+    if(ok){
+      setAdmStatus('sb-conn-status','ok','✓ Conexão bem-sucedida! URL e chave salvas.');
+    } else {
+      setAdmStatus('sb-conn-status','err','⚠ Erro HTTP '+r.status+' — verifique credenciais e CORS no Supabase.');
+    }
+  }catch(e){
+    SB_CONNECTED=false;
+    setAdmStatus('sb-conn-status','err','⚠ Erro de conexão: '+e.message+'. Verifique se a URL está correta e se o CORS permite requisições do browser.');
+  }
 }
 async function syncFromSupabase(){
   setAdmStatus('sb-sync-status','info','◌ Sincronizando da nuvem...');
   const cfg=getSBConfig();if(!cfg.url||!cfg.key){setAdmStatus('sb-sync-status','err','Configure o Supabase primeiro.');return;}
   let count=0;
   try{
-    // DTCs
-    const rD=await fetch(sbUrl('/rest/v1/kovi_dtcs?select=*'),{headers:getSBHeaders()});
-    if(rD.ok){const dtcs=await rD.json();const db=getDTCCustomDB();dtcs.forEach(d=>{db[d.code]={desc:d.desc,expl:d.expl,sintomas:d.sintomas,causas:d.causas,passos:d.passos,sistema:d.sistema,sev:d.sev,veiculo:d.veiculo};count++;});saveDTCCustomDB(db);}
-    // Placas
-    const rP=await fetch(sbUrl('/rest/v1/kovi_placas?select=*'),{headers:getSBHeaders()});
-    if(rP.ok){const placas=await rP.json();const db=getPlateCustomDB();placas.forEach(p=>{db[p.plate]={mfr:p.mfr,model:p.model,label:p.label,ano:p.ano,state:p.state};count++;});savePlateCustomDB(db);}
+    const h=getSBHeaders();
+    // DTCs (app table)
+    const rD=await fetch(sbUrl('/rest/v1/kovi_dtcs?select=*'),{headers:h});
+    if(rD.ok){const dtcs=await rD.json();const db=getDTCCustomDB();dtcs.forEach(d=>{
+      const code=(d.code||d.codigo||'').toUpperCase();if(!code)return;
+      db[code]={desc:d.desc||d.descricao||'',expl:d.expl||d.explicacao||'',sintomas:d.sintomas||'',causas:d.causas||d.causas_provaveis||'',passos:d.passos||'',sistema:d.sistema||'',sev:d.sev||d.severidade||'',veiculo:d.veiculo||''};count++;
+    });saveDTCCustomDB(db);}
+
+    // Placas — tenta tabela "frota" (banco deles) primeiro, depois kovi_placas
+    let placas=[];
+    const rFrota=await fetch(sbUrl('/rest/v1/frota?select=placa,modelo_carro,carro&limit=50000'),{headers:h});
+    if(rFrota.ok){
+      placas=await rFrota.json();
+      const db=getPlateCustomDB();
+      placas.forEach(p=>{
+        const k=(p.placa||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();if(!k)return;
+        // Parse modelo_carro: "FIAT_ARGO DRIVE 1.0" → mfr=FIAT, model=ARGO DRIVE 1.0
+        const raw=p.modelo_carro||'';
+        const parts=raw.split('_');
+        const mfr=parts[0]||'';
+        const modelPart=(parts.slice(1).join(' ')||p.carro||'').trim();
+        db[k]={mfr,model:modelPart,label:p.carro||modelPart,ano:'',state:''};count++;
+      });
+      savePlateCustomDB(db);
+    } else {
+      // Fallback: kovi_placas
+      const rP=await fetch(sbUrl('/rest/v1/kovi_placas?select=*&limit=50000'),{headers:h});
+      if(rP.ok){const placasKP=await rP.json();const db=getPlateCustomDB();placasKP.forEach(p=>{
+        const k=(p.placa||p.plate||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();if(!k)return;
+        db[k]={mfr:p.mfr||p.montadora||'',model:p.modelo||p.model||'',label:p.label||p.carro||p.model||'',ano:p.ano||'',state:p.estado||p.state||''};count++;
+      });savePlateCustomDB(db);}
+    }
+
     // Techs
-    const rT=await fetch(sbUrl('/rest/v1/kovi_techs?select=*'),{headers:getSBHeaders()});
+    const rT=await fetch(sbUrl('/rest/v1/kovi_techs?select=*'),{headers:h});
     if(rT.ok){const techs=await rT.json();saveTechDB(techs);count+=techs.length;}
+
     setAdmStatus('sb-sync-status','ok',`✓ Sincronizado: ${count} registros importados.`);
+    renderAdmPlateList();
   }catch(e){setAdmStatus('sb-sync-status','err','⚠ '+e.message);}
 }
 async function syncToSupabase(){
   setAdmStatus('sb-sync-status','info','◌ Enviando para nuvem...');
   const cfg=getSBConfig();if(!cfg.url||!cfg.key){setAdmStatus('sb-sync-status','err','Configure o Supabase primeiro.');return;}
-  let count=0;
+  let count=0;const h={...getSBHeaders(),'Prefer':'resolution=merge-duplicates'};
   try{
+    // DTCs → kovi_dtcs
     const dtcDB=getDTCCustomDB();
     for(const[code,d] of Object.entries(dtcDB)){
-      await fetch(sbUrl('/rest/v1/kovi_dtcs'),{method:'POST',headers:{...getSBHeaders(),'Prefer':'resolution=merge-duplicates'},body:JSON.stringify({code,...d})});count++;
+      await fetch(sbUrl('/rest/v1/kovi_dtcs'),{method:'POST',headers:h,body:JSON.stringify({code,desc:d.desc,expl:d.expl,sintomas:d.sintomas,causas:d.causas,passos:d.passos,sistema:d.sistema,sev:d.sev,veiculo:d.veiculo})});count++;
     }
+    // Placas → frota (banco deles) E kovi_placas (app)
     const plDB=getPlateCustomDB();
-    for(const[plate,p] of Object.entries(plDB)){
-      await fetch(sbUrl('/rest/v1/kovi_placas'),{method:'POST',headers:{...getSBHeaders(),'Prefer':'resolution=merge-duplicates'},body:JSON.stringify({plate,...p})});count++;
+    for(const[placa,p] of Object.entries(plDB)){
+      // Write to frota table (their format)
+      const mfr=(p.mfr||'').toUpperCase();
+      const modelClean=(p.model||p.label||'').trim();
+      const modelo_carro=mfr+(modelClean?'_'+modelClean.toUpperCase():'');
+      await fetch(sbUrl('/rest/v1/frota'),{method:'POST',headers:h,body:JSON.stringify({placa,modelo_carro,carro:p.label||modelClean})}).catch(()=>{});
+      // Also write to kovi_placas (app format)
+      await fetch(sbUrl('/rest/v1/kovi_placas'),{method:'POST',headers:h,body:JSON.stringify({placa,plate:placa,mfr:p.mfr,modelo:p.model,model:p.model,label:p.label,ano:p.ano,estado:p.state,state:p.state})}).catch(()=>{});
+      count++;
     }
+    // Techs
     const techs=getTechDB();
-    for(const t of techs){
-      await fetch(sbUrl('/rest/v1/kovi_techs'),{method:'POST',headers:{...getSBHeaders(),'Prefer':'resolution=merge-duplicates'},body:JSON.stringify(t)});count++;
-    }
+    for(const t of techs){await fetch(sbUrl('/rest/v1/kovi_techs'),{method:'POST',headers:h,body:JSON.stringify(t)});count++;}
     setAdmStatus('sb-sync-status','ok',`✓ ${count} registros enviados para o Supabase.`);
   }catch(e){setAdmStatus('sb-sync-status','err','⚠ '+e.message);}
 }
@@ -2974,31 +3105,113 @@ function clearPlateForm(){
 function importPlates(e){
   const f=e.target.files[0];if(!f)return;
   document.getElementById('pl-prog').style.display='block';
+  document.getElementById('pl-prog-fill').style.width='0%';
   setAdmStatus('pl-import-status','info','◌ Lendo arquivo...');
   const r=new FileReader();
   r.onload=ev=>{
-    const txt=ev.target.result;let count=0;
+    const txt=ev.target.result;let count=0,skipped=0;
     const db=getPlateCustomDB();
     try{
+      // ── Helper: parse modelo_carro "FIAT_ARGO DRIVE 1.0" or "CHEVROLET_ONIX PLUS 10MT LT2"
+      function parseModelo(raw,carroLabel){
+        if(!raw)return{mfr:'',model:carroLabel||'',label:carroLabel||''};
+        const idx=raw.indexOf('_');
+        if(idx>0){
+          const mfr=raw.substring(0,idx).trim();
+          const model=raw.substring(idx+1).trim();
+          // Normalize montadora
+          const mfrMap={'FIAT':'FIAT','VOLKSWAGEN':'VOLKSWAGEN','VW':'VOLKSWAGEN','CHEVROLET':'GM / CHEVROLET','GM':'GM / CHEVROLET','HYUNDAI':'HYUNDAI','TOYOTA':'TOYOTA','RENAULT':'RENAULT','HONDA':'HONDA','FORD':'FORD','JEEP':'JEEP'};
+          const mfrNorm=mfrMap[mfr.toUpperCase()]||mfr;
+          return{mfr:mfrNorm,model:model,label:carroLabel||model};
+        }
+        return{mfr:'',model:raw.trim(),label:carroLabel||raw.trim()};
+      }
+
       if(f.name.endsWith('.json')){
         const arr=JSON.parse(txt);
-        arr.forEach(p=>{const k=(p.plate||p.PLACA||p.placa||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();if(!k)return;db[k]={mfr:p.mfr||p.MONTADORA||'',model:p.model||p.MODELO||'',label:p.label||p.LABEL||p.model||'',ano:p.ano||p.ANO||'',state:p.state||p.PLANTA||''};count++;});
-      } else {
-        // CSV
-        const lines=txt.split(/\r?\n/).filter(Boolean);const header=lines[0].split(',').map(h=>h.trim().toLowerCase());
-        lines.slice(1).forEach((line,li)=>{
-          const cols=line.split(',');const obj={};header.forEach((h,i)=>obj[h]=cols[i]?.trim()||'');
-          const k=(obj.placa||obj.plate||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();if(!k)return;
-          db[k]={mfr:obj.montadora||obj.mfr||'',model:obj.modelo||obj.model||'',label:obj.label||obj.model||'',ano:obj.ano||'',state:obj.estado||obj.state||obj.planta||''};
+        arr.forEach(p=>{
+          const k=(p.placa||p.plate||p.PLACA||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+          if(!k){skipped++;return;}
+          const parsed=parseModelo(p.modelo_carro||p.MODELO_CARRO||p.model||p.MODELO||'',p.carro||p.CARRO||p.label||p.LABEL||'');
+          db[k]={mfr:p.mfr||p.MONTADORA||parsed.mfr,model:p.model||p.MODELO||parsed.model,label:p.label||p.LABEL||parsed.label,ano:p.ano||p.ANO||'',state:p.state||p.PLANTA||p.estado||p.ESTADO||''};
           count++;
-          if(li%500===0)document.getElementById('pl-prog-fill').style.width=Math.round(li/lines.length*100)+'%';
+        });
+      } else {
+        // CSV — detect separator (comma or semicolon or tab)
+        const firstLine=txt.split(/\r?\n/)[0];
+        const sep=firstLine.includes(';')?';':firstLine.includes('\t')?'\t':',';
+        const lines=txt.split(/\r?\n/).filter(l=>l.trim());
+        const rawHeader=lines[0].split(sep).map(h=>h.trim().toLowerCase().replace(/["\s]/g,''));
+
+        // Column aliases — maps any of these to our internal keys
+        const colMap={
+          placa:['placa','plate','placaveiculo'],
+          modelo_carro:['modelo_carro','modelocarro','modelo','model'],
+          carro:['carro','label','nomeveiculo','veiculo','car'],
+          mfr:['mfr','montadora','marca','manufacturer'],
+          ano:['ano','year','anofabricacao'],
+          state:['estado','planta','state','plant','local'],
+        };
+        function findCol(key){
+          for(const alias of colMap[key]){const idx=rawHeader.indexOf(alias);if(idx>=0)return idx;}
+          return -1;
+        }
+        const ci={placa:findCol('placa'),modelo_carro:findCol('modelo_carro'),carro:findCol('carro'),mfr:findCol('mfr'),ano:findCol('ano'),state:findCol('state')};
+
+        lines.slice(1).forEach((line,li)=>{
+          const cols=line.split(sep).map(c=>c.trim().replace(/^"|"$/g,''));
+          const placa=(ci.placa>=0?cols[ci.placa]||'':'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+          if(!placa){skipped++;return;}
+          const modelo_carro=ci.modelo_carro>=0?cols[ci.modelo_carro]||'':'';
+          const carro=ci.carro>=0?cols[ci.carro]||'':'';
+          const parsed=parseModelo(modelo_carro,carro);
+          db[placa]={
+            mfr:ci.mfr>=0&&cols[ci.mfr]?cols[ci.mfr]:parsed.mfr,
+            model:parsed.model,
+            label:parsed.label||carro||parsed.model,
+            ano:ci.ano>=0?cols[ci.ano]||'':'',
+            state:ci.state>=0?cols[ci.state]||'':'',
+          };
+          count++;
+          if(li%200===0)document.getElementById('pl-prog-fill').style.width=Math.round(li/lines.length*100)+'%';
         });
       }
-      savePlateCustomDB(db);document.getElementById('pl-prog-fill').style.width='100%';
-      setAdmStatus('pl-import-status','ok',`✓ ${count} veículos importados com sucesso.`);renderAdmPlateList();
+      savePlateCustomDB(db);
+      document.getElementById('pl-prog-fill').style.width='100%';
+      const msg=`✓ ${count} veículos importados com sucesso.${skipped>0?' ('+skipped+' linhas ignoradas)':''}`;
+      setAdmStatus('pl-import-status','ok',msg);
+      renderAdmPlateList();
     }catch(err){setAdmStatus('pl-import-status','err','⚠ Erro ao processar: '+err.message);}
-  };r.readAsText(f);
+  };r.readAsText(f,'UTF-8');
 }
+async function importFromSheets() {
+  const url = document.getElementById('sheets-url').value.trim();
+  const statusEl = document.getElementById('sheets-status');
+  if(!url) { setAdmStatus('sheets-status', 'err', 'Cole a URL do Google Sheets primeiro.'); return; }
+  
+  setAdmStatus('sheets-status', 'info', '◌ Baixando dados do Google Sheets...');
+  try {
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('Falha ao baixar. Verifique se o link está publicado na web e é um CSV.');
+    const text = await res.text();
+    
+    // Simula o evento de arquivo (reaproveitando a lógica parruda do importPlates)
+    const file = new File([text], "sheets.csv", { type: "text/csv" });
+    const event = { target: { files: [file] } };
+    importPlates(event);
+    
+    setAdmStatus('sheets-status', 'ok', '✓ Planilha baixada. Processando...');
+  } catch(e) {
+    setAdmStatus('sheets-status', 'err', '⚠ Erro: ' + e.message);
+  }
+}
+
+function importFromSBFrota() {
+  // Como o syncFromSupabase já faz isso de forma inteligente no código novo, 
+  // podemos apenas chamar ele!
+  syncFromSupabase();
+}
+  
 function renderAdmPlateList(){
   const db={...PLATE_DB,...getPlateCustomDB()};const q=(document.getElementById('pl-search')?.value||'').toLowerCase();
   const entries=Object.entries(db).filter(([p,v])=>!q||p.toLowerCase().includes(q)||(v.model||'').toLowerCase().includes(q)||(v.label||'').toLowerCase().includes(q));
@@ -3165,6 +3378,14 @@ function resetData(type){
 
 /* ── Shared util ── */
 function setAdmStatus(id,type,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.className='adm-status '+type;}}
+
+/* ── SQL tab switcher (used in renderAdmin) ── */
+function showSQL(id){
+  ['sql-frota','sql-kovi','sql-rls'].forEach(s=>{
+    const el=document.getElementById(s);
+    if(el)el.style.display=s===id?'block':'none';
+  });
+}
 
 /* ════════════════════════════════════════════
    ADMIN AUTH
