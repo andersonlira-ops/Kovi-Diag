@@ -566,6 +566,45 @@ select.adm-input{cursor:pointer;}
 
 @keyframes fadein{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
 .anim{animation:fadein .18s ease forwards;}
+  /* ════════ RESPONSIVIDADE: TABLETS E SMARTPHONES ════════ */
+@media (max-width: 1024px) {
+  /* Permite rolar a tela inteira para baixo */
+  html, body { overflow-y: auto; height: auto; }
+  #app { height: auto; min-height: 100vh; overflow-y: visible; flex-direction: column; }
+  
+  /* Ajuste do Menu Superior */
+  #nav { height: auto; flex-wrap: wrap; padding: 10px; justify-content: center; gap: 6px; }
+  .logo { width: 100%; justify-content: center; margin-right: 0; margin-bottom: 6px; }
+  .nav-tab { padding: 8px 12px; font-size: 10px; border-bottom: none; border-radius: 4px; background: rgba(255,255,255,.03); }
+  .nav-tab.active { background: rgba(249,115,22,.15); border: 1px solid var(--orange); }
+  .nav-spacer { display: none; }
+  .print-btn { width: 100%; justify-content: center; margin-top: 5px; margin-right: 0; }
+  
+  /* Quebra das colunas principais (Diagnóstico, Esquemas, Histórico) */
+  #tab-diag, #tab-esq, #tab-hist { flex-direction: column; overflow-y: visible; }
+  #left-col, #right-col, #esq-nav, #hist-list-col { width: 100%; border-right: none; border-bottom: 2px solid var(--border); height: auto; max-height: none; flex-shrink: 0; }
+  #center-col, #esq-main, #hist-main-col { width: 100%; border-right: none; height: auto; overflow-y: visible; }
+  
+  /* Ajustes do Dashboard */
+  .dash-kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .dash-grid, .dash-grid-2 { grid-template-columns: 1fr; }
+  
+  /* Ajustes do Admin e Modais */
+  .adm-row2, .adm-row3 { grid-template-columns: 1fr; gap: 10px; }
+  .modal-box { width: 95vw; padding: 20px; max-height: 95vh; }
+  .img-fields-grid { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 600px) {
+  /* Ajustes específicos para Telas de Celular pequenas */
+  .dash-kpi-row { grid-template-columns: 1fr; }
+  .hist-detail-header { flex-direction: column; gap: 10px; }
+  .hist-action-row { width: 100%; }
+  .hist-action-btn { width: 100%; text-align: center; }
+  .dtc-hdr { flex-direction: column; align-items: center; text-align: center; }
+  .dtc-badge { width: 100%; margin-bottom: 10px; }
+  .badge-row { justify-content: center; }
+}
 </style>
 </head>
 <body>
