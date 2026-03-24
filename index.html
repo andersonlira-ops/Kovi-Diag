@@ -1000,20 +1000,7 @@ function getHistDB(){
 }
 function saveHistDB(db){localStorage.setItem('kovi_hist_v11',JSON.stringify(db));}
 function initHistDB(){
-  let db=getHistDB();
-  if(db.length>0) return;
-  // Seed with sample multi-plant data
-  const seed=[
-    {id:'H001',plate:'QSV2B28',model:'Volkswagen Polo Track 1.0',state:'SP - Planta 01',tech:'Carlos M.',date:'2025-11-15',dtcs:['P0300','P0301'],solution:'Substituição das velas de ignição jogo completo. Limpeza dos bicos injetores. Verificado sistema de ignição. Veiculo apresentava consumo elevado e falta de potência.',km:32400,status:'resolvido'},
-    {id:'H002',plate:'GIW1H03',model:'Fiat Argo 1.0 2022',state:'SP - Planta 01',tech:'Rodrigo S.',date:'2025-11-20',dtcs:['B1035'],solution:'Alinhamento PROXI realizado via scanner. Verificados conectores da UCE da direção elétrica. Mau contato no conector X3 do módulo, limpo e recolocado.',km:18900,status:'resolvido'},
-    {id:'H003',plate:'TAU5F69',model:'Chevrolet Onix 1.0 MT HB',state:'MG - Planta 02',tech:'Felipe A.',date:'2025-11-22',dtcs:['P0301'],solution:'Substituição da vela de ignição do cilindro 1. Teste de compressão realizado. Todos cilindros dentro da especificação. Teste de estrada OK.',km:10200,status:'resolvido'},
-    {id:'H004',plate:'KJH3F45',model:'Volkswagen Polo Track 1.0',state:'RJ - Planta 03',tech:'Marcos P.',date:'2025-11-28',dtcs:['P0300','U0001'],solution:'Mau contato no barramento CAN. Conector C45 oxidado. Substituição do trecho do chicote afetado. Resetado memória do ECM.',km:41200,status:'resolvido'},
-    {id:'H005',plate:'MNO7K22',model:'Volkswagen Polo Track 1.0',state:'RS - Planta 04',tech:'Paulo H.',date:'2025-12-01',dtcs:['P0300','P0302'],solution:'Bobinas de ignição dos cilindros 1 e 2 substituídas. Velas inspecionadas. Filtro de combustível trocado. Motor normalizado após 30 minutos.',km:28700,status:'resolvido'},
-    {id:'H006',plate:'ABC1D23',model:'VW Polo 1.0 2018',state:'SP - Planta 01',tech:'Carlos M.',date:'2025-12-05',dtcs:['P0420'],solution:'Sensor O2 pós-catalisador com sinal degradado. Substituição do sensor. Catalisador inspecionado - dentro dos limites. Monitor EVAP OK após 2 ciclos.',km:65300,status:'resolvido'},
-    {id:'H007',plate:'PRQ8L11',model:'Fiat Argo 1.3 2022',state:'BA - Planta 05',tech:'Rafael T.',date:'2025-12-08',dtcs:['C1215','C0020'],solution:'Interruptor do pedal de freio com folga excessiva. Ajuste mecânico e troca do interruptor. Bomba ABS testada. Motor da bomba OK. Sangria realizada.',km:22100,status:'resolvido'},
-    {id:'H008',plate:'QSV2B28',model:'Volkswagen Polo Track 1.0',state:'SP - Planta 01',tech:'Rodrigo S.',date:'2025-12-10',dtcs:['P0300'],solution:'Segunda ocorrência de falha de ignição. Verificado sistema de combustível - pressão baixa (2.1 bar, spec 3.0 bar). Bomba de combustível substituída. Injetores testados.',km:35800,status:'resolvido'},
-  ];
-  saveHistDB(seed);
+  // Modo produção ativado
 }
 
 /* ════════════════════════════════════════════
