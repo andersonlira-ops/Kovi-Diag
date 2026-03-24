@@ -1120,19 +1120,14 @@ async function searchPlate(){
     inp.classList.add('warn');
     try{
       const res=await fetch(
-        sbUrl(`/rest/v1/frota?select=placa,modelo_carro,carro&placa=eq.${encodeURIComponent(k)}&limit=1`),
+        sbUrl(`/rest/v1/frota?select=plate,model,mfr,ano,state&plate=eq.${encodeURIComponent(k)}&limit=1`),
         {headers:getSBHeaders()}
       );
       if(res.ok){
         const rows=await res.json();
         if(rows&&rows.length>0){
           const p=rows[0];
-          const raw2=p.modelo_carro||'';
-          const idx=raw2.indexOf('_');
-          const mfrRaw=idx>0?raw2.substring(0,idx):'';
-          const model=idx>0?raw2.substring(idx+1).trim():(p.carro||raw2);
-          const MFR={FIAT:'FIAT',VOLKSWAGEN:'VOLKSWAGEN',VW:'VOLKSWAGEN',CHEVROLET:'GM / CHEVROLET',GM:'GM / CHEVROLET',HYUNDAI:'HYUNDAI',TOYOTA:'TOYOTA',RENAULT:'RENAULT',HONDA:'HONDA',FORD:'FORD',JEEP:'JEEP'};
-          const found={mfr:MFR[mfrRaw.toUpperCase()]||mfrRaw,model,label:p.carro||model,ano:'',state:''};
+          const found={mfr:p.mfr||'', model:p.model||'', label:p.label||p.model||'', ano:p.ano||'', state:p.state||''};
           PLATE_CACHE[k]=found;
           inp.classList.remove('warn');
           applyPlateFound(found,inp,msg,raw);
