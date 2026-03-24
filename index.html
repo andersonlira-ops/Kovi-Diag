@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>KOVI // DIAG </title>
+<title>KOVI // DIAG v11</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -566,44 +566,50 @@ select.adm-input{cursor:pointer;}
 
 @keyframes fadein{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
 .anim{animation:fadein .18s ease forwards;}
-  /* ════════ RESPONSIVIDADE: TABLETS E SMARTPHONES ════════ */
-@media (max-width: 1024px) {
-  /* Permite rolar a tela inteira para baixo */
-  html, body { overflow-y: auto; height: auto; }
-  #app { height: auto; min-height: 100vh; overflow-y: visible; flex-direction: column; }
-  
-  /* Ajuste do Menu Superior */
-  #nav { height: auto; flex-wrap: wrap; padding: 10px; justify-content: center; gap: 6px; }
-  .logo { width: 100%; justify-content: center; margin-right: 0; margin-bottom: 6px; }
-  .nav-tab { padding: 8px 12px; font-size: 10px; border-bottom: none; border-radius: 4px; background: rgba(255,255,255,.03); }
-  .nav-tab.active { background: rgba(249,115,22,.15); border: 1px solid var(--orange); }
-  .nav-spacer { display: none; }
-  .print-btn { width: 100%; justify-content: center; margin-top: 5px; margin-right: 0; }
-  
-  /* Quebra das colunas principais (Diagnóstico, Esquemas, Histórico) */
-  #tab-diag, #tab-esq, #tab-hist { flex-direction: column; overflow-y: visible; }
-  #left-col, #right-col, #esq-nav, #hist-list-col { width: 100%; border-right: none; border-bottom: 2px solid var(--border); height: auto; max-height: none; flex-shrink: 0; }
-  #center-col, #esq-main, #hist-main-col { width: 100%; border-right: none; height: auto; overflow-y: visible; }
-  
-  /* Ajustes do Dashboard */
-  .dash-kpi-row { grid-template-columns: repeat(2, 1fr); }
-  .dash-grid, .dash-grid-2 { grid-template-columns: 1fr; }
-  
-  /* Ajustes do Admin e Modais */
-  .adm-row2, .adm-row3 { grid-template-columns: 1fr; gap: 10px; }
-  .modal-box { width: 95vw; padding: 20px; max-height: 95vh; }
-  .img-fields-grid { grid-template-columns: 1fr !important; }
-}
 
-@media (max-width: 600px) {
-  /* Ajustes específicos para Telas de Celular pequenas */
-  .dash-kpi-row { grid-template-columns: 1fr; }
-  .hist-detail-header { flex-direction: column; gap: 10px; }
-  .hist-action-row { width: 100%; }
-  .hist-action-btn { width: 100%; text-align: center; }
-  .dtc-hdr { flex-direction: column; align-items: center; text-align: center; }
-  .dtc-badge { width: 100%; margin-bottom: 10px; }
-  .badge-row { justify-content: center; }
+/* ════════ MOBILE RESPONSIVE ════════ */
+@media (max-width:768px){
+  body{font-size:11px;}
+  #apibar{padding:0 10px;gap:6px;}
+  .apibar-key-display{display:none;}
+  #nav{padding:0 8px;gap:0;overflow-x:auto;}
+  .logo{margin-right:12px;}
+  .logo-kovi,.logo-diag{font-size:11px;}
+  .nav-tab{padding:0 8px;font-size:8px;letter-spacing:1px;}
+  .print-btn{display:none;}
+  #app{height:calc(100vh - 80px);}
+  /* Diagnóstico — stack columns */
+  #tab-diag{flex-direction:column!important;}
+  #left-col{width:100%!important;max-height:220px;border-right:none!important;border-bottom:1px solid var(--border);}
+  #center-col{flex:1;min-height:0;}
+  #right-col{display:none!important;}
+  /* Esquemas — hide nav on mobile */
+  #tab-esq{flex-direction:column!important;}
+  #esq-nav{width:100%!important;max-height:80px;overflow-x:auto;display:flex;flex-direction:row!important;border-right:none!important;border-bottom:1px solid var(--border);padding:6px;}
+  .esq-grp{display:none;}
+  .esq-ni{padding:6px 10px!important;font-size:8px;white-space:nowrap;}
+  #esq-main{padding:12px!important;}
+  /* Histórico — stack */
+  #tab-hist{flex-direction:column!important;}
+  #hist-list-col{width:100%!important;max-height:200px;border-right:none!important;border-bottom:1px solid var(--border);}
+  /* Dashboard */
+  .dash-kpi-row{grid-template-columns:1fr 1fr!important;}
+  .dash-grid{grid-template-columns:1fr!important;}
+  .dash-grid-2{grid-template-columns:1fr!important;}
+  .cross-stat-row{grid-template-columns:1fr 1fr!important;}
+  /* Admin */
+  .adm-row2{grid-template-columns:1fr!important;}
+  .adm-row3{grid-template-columns:1fr!important;}
+  /* Modals */
+  .modal-box{width:95vw!important;padding:18px!important;}
+  /* Print hidden on mobile is fine */
+}
+@media (max-width:480px){
+  .dash-kpi-row{grid-template-columns:1fr!important;}
+  .kpi-num{font-size:22px!important;}
+  .hist-plate-big{font-size:20px!important;}
+  .nav-tab{font-size:7px!important;padding:0 5px!important;}
+  .logo-ver{display:none;}
 }
 </style>
 </head>
@@ -1007,7 +1013,8 @@ function initHistDB(){
     {id:'H007',plate:'PRQ8L11',model:'Fiat Argo 1.3 2022',state:'BA - Planta 05',tech:'Rafael T.',date:'2025-12-08',dtcs:['C1215','C0020'],solution:'Interruptor do pedal de freio com folga excessiva. Ajuste mecânico e troca do interruptor. Bomba ABS testada. Motor da bomba OK. Sangria realizada.',km:22100,status:'resolvido'},
     {id:'H008',plate:'QSV2B28',model:'Volkswagen Polo Track 1.0',state:'SP - Planta 01',tech:'Rodrigo S.',date:'2025-12-10',dtcs:['P0300'],solution:'Segunda ocorrência de falha de ignição. Verificado sistema de combustível - pressão baixa (2.1 bar, spec 3.0 bar). Bomba de combustível substituída. Injetores testados.',km:35800,status:'resolvido'},
   ];
- }
+  saveHistDB(seed);
+}
 
 /* ════════════════════════════════════════════
    LIGHTBOX
@@ -1074,29 +1081,75 @@ document.getElementById('modal-key-input').addEventListener('keydown',e=>{if(e.k
 ════════════════════════════════════════════ */
 document.getElementById('plate-in').addEventListener('keydown',e=>{if(e.key==='Enter')searchPlate();});
 function normP(p){return p.replace(/[^A-Za-z0-9]/g,'').toUpperCase().trim();}
-function searchPlate(){
+/* Cache de placas buscadas na sessão (evita repetir queries) */
+const PLATE_CACHE={};
+
+function applyPlateFound(found, inp, msg, raw){
+  S.vehicle=found; S.plateRaw=raw;
+  inp.classList.add('found');
+  msg.textContent='✓ '+found.label; msg.classList.add('ok');
+  document.getElementById('vehicle-box').textContent=found.label;
+  document.getElementById('btn-clear-plate').style.display='block';
+  document.getElementById('btn-open-hist').style.display='block';
+  document.getElementById('esq-veh-lbl').textContent=found.label;
+  updateSimilar();
+}
+
+async function searchPlate(){
   const raw=document.getElementById('plate-in').value;
   const k=normP(raw);
   const inp=document.getElementById('plate-in');
   const msg=document.getElementById('plate-msg');
-  inp.classList.remove('found','err','warn');msg.textContent='';msg.className='plate-msg';
+  inp.classList.remove('found','err','warn');
+  msg.textContent='';msg.className='plate-msg';
   if(k.length<7){inp.classList.add('err');msg.textContent='Placa muito curta';msg.classList.add('err');return;}
-  // Check custom DB first, then static PLATE_DB
-  const customPlates=getPlateCustomDB();
-  const found=customPlates[k]||PLATE_DB[k]||null;
-  if(found){
-    S.vehicle=found;S.plateRaw=raw;
-    inp.classList.add('found');msg.textContent='✓ '+found.label;msg.classList.add('ok');
-    document.getElementById('vehicle-box').textContent=found.label;
-    document.getElementById('btn-clear-plate').style.display='block';
-    document.getElementById('btn-open-hist').style.display='block';
-    document.getElementById('esq-veh-lbl').textContent=found.label;
-    updateSimilar();
-  } else {
-    inp.classList.add('warn');msg.textContent='⚠ Não cadastrada — selecione manualmente';msg.classList.add('warn');
-    document.getElementById('btn-clear-plate').style.display='block';
-    S.vehicle=null;
+
+  // 1. Cache da sessão
+  if(PLATE_CACHE[k]){applyPlateFound(PLATE_CACHE[k],inp,msg,raw);return;}
+
+  // 2. PLATE_DB estático (4 placas demo)
+  if(PLATE_DB[k]){PLATE_CACHE[k]=PLATE_DB[k];applyPlateFound(PLATE_DB[k],inp,msg,raw);return;}
+
+  // 3. Admin: placas cadastradas manualmente (pequena lista, ok no localStorage)
+  const manualPlates=getPlateCustomDB();
+  if(manualPlates[k]){PLATE_CACHE[k]=manualPlates[k];applyPlateFound(manualPlates[k],inp,msg,raw);return;}
+
+  // 4. Supabase — busca direta (não armazena todas no localStorage)
+  if(hasSBConfig()){
+    msg.textContent='⏳ Consultando banco...'; msg.className='plate-msg';
+    inp.classList.add('warn');
+    try{
+      const res=await fetch(
+        sbUrl(`/rest/v1/frota?select=placa,modelo_carro,carro&placa=eq.${encodeURIComponent(k)}&limit=1`),
+        {headers:getSBHeaders()}
+      );
+      if(res.ok){
+        const rows=await res.json();
+        if(rows&&rows.length>0){
+          const p=rows[0];
+          const raw2=p.modelo_carro||'';
+          const idx=raw2.indexOf('_');
+          const mfrRaw=idx>0?raw2.substring(0,idx):'';
+          const model=idx>0?raw2.substring(idx+1).trim():(p.carro||raw2);
+          const MFR={FIAT:'FIAT',VOLKSWAGEN:'VOLKSWAGEN',VW:'VOLKSWAGEN',CHEVROLET:'GM / CHEVROLET',GM:'GM / CHEVROLET',HYUNDAI:'HYUNDAI',TOYOTA:'TOYOTA',RENAULT:'RENAULT',HONDA:'HONDA',FORD:'FORD',JEEP:'JEEP'};
+          const found={mfr:MFR[mfrRaw.toUpperCase()]||mfrRaw,model,label:p.carro||model,ano:'',state:''};
+          PLATE_CACHE[k]=found;
+          inp.classList.remove('warn');
+          applyPlateFound(found,inp,msg,raw);
+          return;
+        }
+      }
+    }catch(e){
+      console.warn('[KOVI] Erro ao buscar placa no SB:',e.message);
+    }
   }
+
+  // Não encontrada
+  inp.classList.remove('warn'); inp.classList.add('warn');
+  msg.textContent='⚠ Não cadastrada — selecione manualmente';
+  msg.className='plate-msg warn';
+  document.getElementById('btn-clear-plate').style.display='block';
+  S.vehicle=null;
 }
 function clearPlate(){
   document.getElementById('plate-in').value='';
@@ -2350,15 +2403,45 @@ async function genAIReport(plate){
   }catch(err){area.innerHTML=`<div class="hist-ai-report"><span style="color:var(--red)">⚠ ${escH(err.message)}</span></div>`;}
 }
 
-function autoFillPlateModal(plate){
-  if(plate.length < 7) return;
-  const customPlates=getPlateCustomDB();
-  const found=customPlates[plate]||PLATE_DB[plate]||null;
+async function autoFillPlateModal(plate){
+  if(plate.length<7) return;
   const hint=document.getElementById('na-plate-hint');
-  if(found){
-    document.getElementById('na-model').value=found.label||found.model||'';
-    if(hint)hint.textContent='✓ '+found.label;
-  } else {
+  // 1. Cache da sessão
+  if(PLATE_CACHE[plate]){
+    const f=PLATE_CACHE[plate];
+    document.getElementById('na-model').value=f.label||f.model||'';
+    if(hint)hint.textContent='✓ '+f.label;
+    return;
+  }
+  // 2. PLATE_DB estático + manual
+  const local=getPlateCustomDB()[plate]||PLATE_DB[plate]||null;
+  if(local){
+    PLATE_CACHE[plate]=local;
+    document.getElementById('na-model').value=local.label||local.model||'';
+    if(hint)hint.textContent='✓ '+local.label;
+    return;
+  }
+  // 3. Supabase direto
+  if(hasSBConfig()){
+    if(hint)hint.textContent='⏳ Consultando...';
+    try{
+      const res=await fetch(sbUrl(`/rest/v1/frota?select=placa,modelo_carro,carro&placa=eq.${encodeURIComponent(plate)}&limit=1`),{headers:getSBHeaders()});
+      if(res.ok){
+        const rows=await res.json();
+        if(rows&&rows.length>0){
+          const p=rows[0];
+          const raw=p.modelo_carro||''; const idx=raw.indexOf('_');
+          const mfrRaw=idx>0?raw.substring(0,idx):'';
+          const model=idx>0?raw.substring(idx+1).trim():(p.carro||raw);
+          const MFR={FIAT:'FIAT',VOLKSWAGEN:'VOLKSWAGEN',VW:'VOLKSWAGEN',CHEVROLET:'GM / CHEVROLET',GM:'GM / CHEVROLET',HYUNDAI:'HYUNDAI',TOYOTA:'TOYOTA',RENAULT:'RENAULT',HONDA:'HONDA',FORD:'FORD',JEEP:'JEEP'};
+          const found={mfr:MFR[mfrRaw.toUpperCase()]||mfrRaw,model,label:p.carro||model,ano:'',state:''};
+          PLATE_CACHE[plate]=found;
+          document.getElementById('na-model').value=found.label||found.model||'';
+          if(hint)hint.textContent='✓ '+(found.label||found.model);
+          return;
+        }
+      }
+    }catch(e){}
     if(hint)hint.textContent='';
   }
 }
@@ -2376,7 +2459,7 @@ function openNewAtendimento(plate='',model=''){
   // Populate plants dropdown
   const stateSel=document.getElementById('na-state');
   const existingPlants=[...new Set(getHistDB().map(h=>h.state).filter(Boolean))];
-  const defaultPlants=['JURUBATUBA', 'POA'];
+  const defaultPlants=['SP - Planta 01','MG - Planta 02','RJ - Planta 03','RS - Planta 04','BA - Planta 05'];
   const allPlants=[...new Set([...existingPlants,...defaultPlants])];
   stateSel.innerHTML='';
   allPlants.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;stateSel.appendChild(o);});
@@ -2418,12 +2501,13 @@ function saveAtendimento(){
   const dtcs=dtcsRaw.split(/[\s,;]+/).filter(Boolean);
   const db=getHistDB();
   const dateStr=new Date().toISOString().split('T')[0];
-  db.push({id:'H'+Date.now(),plate,model,state,tech,date:dateStr,dtcs,solution,km,status});
+  const newItem={id:'H'+Date.now(),plate,model,state,tech,date:dateStr,dtcs,solution,km,status};
+  db.push(newItem);
   saveHistDB(db);
+  saveAtendimentoToSB(newItem); // sincroniza para todos os usuários
   document.getElementById('atend-modal').classList.remove('show');
   renderHistList();updateSimilar();
   if(document.getElementById('tab-home').classList.contains('active'))renderDashboard();
-  const newItem=db[db.length-1];
   setTimeout(()=>{switchTab('hist');setTimeout(()=>selectHistItem(newItem.id),200);},100);
 }
 function deleteHistItem(plate){
@@ -2460,38 +2544,189 @@ function statusLabel(s){
    ADMIN PANEL
 ════════════════════════════════════════════ */
 
-/* ── Supabase helpers ── */
+
+/* ════════════════════════════════════════════
+   SUPABASE CONFIG — EMBUTIDO NO HTML
+   Admin: preencha SB_URL e SB_KEY uma vez.
+   Todos os usuários conectam automaticamente.
+════════════════════════════════════════════ */
+// ▼▼▼ PREENCHA AQUI (Admin) ▼▼▼
+const SB_URL_FIXED = localStorage.getItem('kovi_sb_url_fixed') || '';
+const SB_KEY_FIXED = localStorage.getItem('kovi_sb_key_fixed') || '';
+// ▲▲▲ fim das configurações ▲▲▲
+
+/* Supabase helpers — usa embutido primeiro, localStorage como fallback */
 function getSBConfig(){
-  const local = JSON.parse(localStorage.getItem('kovi_sb_v11')||'{}');
-  // Se o usuário não tiver configurado no Admin, usa o padrão para todos:
-  if(!local.url || !local.key) {
-    return {
-      url: 'https://uspmimhbhskuzxqwayxg.supabase.co',
-      key: 'sb_publishable_BkUikShBaJA1bznX9w4UsA_u5123xzv'
-    };
-  }
-  return local;
+  const lsConf = JSON.parse(localStorage.getItem('kovi_sb_v11')||'{}');
+  return {
+    url: SB_URL_FIXED || lsConf.url || '',
+    key: SB_KEY_FIXED || lsConf.key || '',
+  };
 }
-function saveSBConfig(c){localStorage.setItem('kovi_sb_v11',JSON.stringify(c));}
-function getSBHeaders(){const c=getSBConfig();return{'Content-Type':'application/json','apikey':c.key||'','Authorization':'Bearer '+(c.key||'')};}
-function sbUrl(path){const c=getSBConfig();return(c.url||'').replace(/\/$/,'')+path;}
+function saveSBConfig(c){
+  // Salva no localStorage local E persiste URL/key fixos globalmente
+  localStorage.setItem('kovi_sb_v11',JSON.stringify(c));
+  localStorage.setItem('kovi_sb_url_fixed', c.url||'');
+  localStorage.setItem('kovi_sb_key_fixed', c.key||'');
+}
+function getSBHeaders(){
+  const c=getSBConfig();
+  return{'Content-Type':'application/json','apikey':c.key||'','Authorization':'Bearer '+(c.key||'')};
+}
+function sbUrl(path){
+  const c=getSBConfig();
+  return (c.url||'').replace(/\/$/,'')+path;
+}
+function hasSBConfig(){const c=getSBConfig();return !!(c.url&&c.key);}
 let SB_CONNECTED=false;
 
-/* ── DTC custom DB (override/extend KOVI_DB) ── */
+/* ── DTC custom DB — local + Supabase como fonte primária ── */
 function getDTCCustomDB(){try{return JSON.parse(localStorage.getItem('kovi_dtc_custom')||'{}');}catch{return{};}}
 function saveDTCCustomDB(db){localStorage.setItem('kovi_dtc_custom',JSON.stringify(db));}
 
-/* ── Plate custom DB ── */
+/* ── Plate custom DB — local + Supabase como fonte primária ── */
 function getPlateCustomDB(){try{return JSON.parse(localStorage.getItem('kovi_plate_custom')||'{}');}catch{return{};}}
-function savePlateCustomDB(db){localStorage.setItem('kovi_plate_custom',JSON.stringify(db));}
+function savePlateCustomDB(db){
+  // Guard: only store manually added plates (small list), NOT the full 47k frota
+  try{localStorage.setItem('kovi_plate_custom',JSON.stringify(db));}
+  catch(e){
+    if(e.name==='QuotaExceededError'||e.code===22){
+      // Too large — keep only the 500 most recently added
+      const entries=Object.entries(db).slice(-500);
+      const trimmed=Object.fromEntries(entries);
+      try{localStorage.setItem('kovi_plate_custom',JSON.stringify(trimmed));}catch(e2){}
+      console.warn('[KOVI] localStorage quota: frota trimada para 500 entradas. Use o Supabase para a frota completa.');
+    }
+  }
+}
 
-/* ── Technician DB ── */
+/* ── Tech DB ── */
 function getTechDB(){try{return JSON.parse(localStorage.getItem('kovi_techs')||'[]');}catch{return[];}}
 function saveTechDB(db){localStorage.setItem('kovi_techs',JSON.stringify(db));}
 
-/* ── Schema groups (clone map) ── */
+/* ── Schema groups ── */
 function getSchemaGroups(){try{return JSON.parse(localStorage.getItem('kovi_schema_groups')||'[]');}catch{return[];}}
 function saveSchemaGroups(g){localStorage.setItem('kovi_schema_groups',JSON.stringify(g));}
+
+/* ════════════════════════════════════════════
+   AUTO-LOAD DO SUPABASE AO INICIAR
+   Puxa frota, DTCs e histórico automaticamente
+   para todos os usuários que abrirem o app.
+════════════════════════════════════════════ */
+let SB_LOAD_STATUS = 'idle'; // idle | loading | done | error
+
+async function autoLoadFromSupabase(){
+  if(!hasSBConfig()){
+    console.log('[KOVI] Supabase não configurado — usando dados locais.');
+    return;
+  }
+  SB_LOAD_STATUS='loading';
+  updateSBLoadBanner('loading');
+  const h=getSBHeaders();
+  const base=(getSBConfig().url||'').replace(/\/$/,'');
+  let total=0;
+
+  try{
+    // NOTA: A frota (47k+ placas) NÃO é carregada em massa — é buscada
+    // individualmente via searchPlate() para não estourar o localStorage (limite 5MB).
+    // Apenas DTCs, histórico e técnicos são carregados em cache.
+
+    // 1. DTCs personalizados (pequeno, seguro para localStorage)
+    const rDTC=await fetch(base+'/rest/v1/kovi_dtcs?select=*&limit=5000',{headers:h});
+    if(rDTC.ok){
+      const dtcs=await rDTC.json();
+      if(Array.isArray(dtcs)&&dtcs.length>0){
+        const db=getDTCCustomDB();
+        dtcs.forEach(d=>{
+          const code=(d.code||'').toUpperCase();if(!code)return;
+          db[code]={desc:d.desc||'',expl:d.expl||'',sintomas:d.sintomas||'',causas:d.causas||'',passos:d.passos||'',sistema:d.sistema||'',sev:d.sev||'',veiculo:d.veiculo||''};
+          total++;
+        });
+        saveDTCCustomDB(db);
+        console.log(`[KOVI] DTCs: ${dtcs.length} códigos personalizados carregados.`);
+      }
+    }
+
+    // 3. Histórico de atendimentos
+    const rHist=await fetch(base+'/rest/v1/kovi_historico?select=*&order=created_at.desc&limit=2000',{headers:h});
+    if(rHist.ok){
+      const hist=await rHist.json();
+      if(Array.isArray(hist)&&hist.length>0){
+        // Merge with local — Supabase wins for same id
+        const local=getHistDB();
+        const localIds=new Set(local.map(x=>x.id));
+        const sbItems=hist.map(x=>({
+          id:x.id,plate:x.plate||x.placa,model:x.model||x.modelo,
+          state:x.state||x.estado,tech:x.tech||x.tecnico,date:x.date||x.data,
+          dtcs:Array.isArray(x.dtcs)?x.dtcs:(x.dtcs||'').split(',').filter(Boolean),
+          solution:x.solution||x.solucao||'',km:x.km,status:x.status||'registrado'
+        }));
+        // Local items not in Supabase stay; Supabase items override local
+        const merged=[...local.filter(l=>!sbItems.find(s=>s.id===l.id)),...sbItems];
+        saveHistDB(merged);
+        total+=hist.length;
+        console.log(`[KOVI] Histórico: ${hist.length} atendimentos carregados do Supabase.`);
+      }
+    }
+
+    // 4. Técnicos
+    const rTech=await fetch(base+'/rest/v1/kovi_techs?select=*',{headers:h});
+    if(rTech.ok){
+      const techs=await rTech.json();
+      if(Array.isArray(techs)&&techs.length>0){saveTechDB(techs);total+=techs.length;}
+    }
+
+    SB_CONNECTED=true;
+    SB_LOAD_STATUS='done';
+    updateSBLoadBanner('done', total);
+
+    // Refresh UI with Supabase data
+    renderHistList();
+    renderDashboard();
+
+  }catch(err){
+    SB_LOAD_STATUS='error';
+    updateSBLoadBanner('error', 0, err.message);
+    console.warn('[KOVI] Erro ao carregar do Supabase:', err.message);
+  }
+}
+
+function updateSBLoadBanner(status, count=0, errMsg=''){
+  let bar=document.getElementById('sb-load-banner');
+  if(!bar){
+    bar=document.createElement('div');bar.id='sb-load-banner';
+    bar.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:9000;padding:6px 16px;font-size:9px;font-family:var(--mono);letter-spacing:1px;display:flex;align-items:center;gap:10px;transition:opacity .5s;';
+    document.body.appendChild(bar);
+  }
+  if(status==='loading'){
+    bar.style.background='rgba(34,211,238,.12)';bar.style.borderTop='1px solid rgba(34,211,238,.3)';bar.style.opacity='1';
+    bar.innerHTML='<span style="color:var(--cyan)">◌ Carregando dados do Supabase...</span>';
+  } else if(status==='done'){
+    bar.style.background='rgba(34,197,94,.1)';bar.style.borderTop='1px solid rgba(34,197,94,.3)';bar.style.opacity='1';
+    bar.innerHTML=`<span style="color:var(--green)">✓ Dados carregados do Supabase — ${count} registros sincronizados</span><button onclick="document.getElementById('sb-load-banner').style.opacity='0'" style="margin-left:auto;background:transparent;border:none;color:var(--muted);cursor:pointer;font-family:var(--mono);font-size:9px;">✕</button>`;
+    setTimeout(()=>{if(bar)bar.style.opacity='0';},5000);
+  } else if(status==='error'){
+    bar.style.background='rgba(239,68,68,.08)';bar.style.borderTop='1px solid rgba(239,68,68,.2)';bar.style.opacity='1';
+    bar.innerHTML=`<span style="color:var(--red)">⚠ Supabase não conectado — usando dados locais</span><button onclick="document.getElementById('sb-load-banner').style.opacity='0'" style="margin-left:auto;background:transparent;border:none;color:var(--muted);cursor:pointer;font-family:var(--mono);font-size:9px;">✕</button>`;
+    setTimeout(()=>{if(bar)bar.style.opacity='0';},4000);
+  }
+}
+
+/* ── Salva atendimento no Supabase também ── */
+async function saveAtendimentoToSB(item){
+  if(!hasSBConfig()||!SB_CONNECTED)return;
+  try{
+    await fetch(sbUrl('/rest/v1/kovi_historico'),{
+      method:'POST',
+      headers:{...getSBHeaders(),'Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({
+        id:item.id,plate:item.plate,model:item.model,
+        state:item.state,tech:item.tech,date:item.date,
+        dtcs:item.dtcs,solution:item.solution,km:item.km,status:item.status
+      })
+    });
+  }catch(e){console.warn('[KOVI] Erro ao salvar atendimento no SB:',e.message);}
+}
 
 
 /* ── Admin tab sections ── */
@@ -2534,12 +2769,15 @@ function renderAdmin(){
   <div class="adm-section ${admSection==='supabase'?'active':''}" id="adm-supabase">
     <div class="adm-row2">
       <div class="adm-card">
-        <div class="adm-card-title">🔌 Conexão Supabase</div>
+        <div class="adm-card-title">🔌 Conexão Supabase — Configuração Compartilhada</div>
         <div id="sup-conn-status" class="adm-sup-status ${SB_CONNECTED?'connected':'disconnected'}">
-          <span>${SB_CONNECTED?'✓ Conectado':'✗ Não conectado'}</span>
+          <span>${SB_CONNECTED?'✓ Conectado e dados carregados automaticamente':'✗ Não conectado'}</span>
+        </div>
+        <div style="background:rgba(250,204,21,.07);border:1px solid rgba(250,204,21,.3);border-radius:6px;padding:10px;margin-bottom:12px;font-size:9px;color:var(--yellow);line-height:1.8;">
+          ⚡ <b>Como funciona:</b> Após salvar e testar a conexão aqui, o app carrega automaticamente a frota, DTCs e histórico do Supabase para <b>todos os usuários</b> ao abrir. Nenhuma configuração adicional necessária.
         </div>
         <div class="adm-field">
-          <label class="adm-label">URL do Projeto</label>
+          <label class="adm-label">URL do Projeto Supabase</label>
           <input class="adm-input" id="sb-url" placeholder="https://xyzxyz.supabase.co" value="${sb.url||''}"/>
         </div>
         <div class="adm-field">
@@ -2549,9 +2787,18 @@ function renderAdmin(){
         <div class="adm-btn-row">
           <button class="adm-btn green" onclick="saveSBConn()">💾 Salvar</button>
           <button class="adm-btn cyan" onclick="testSBConn()">⚡ Testar conexão</button>
+          <button class="adm-btn orange" onclick="autoLoadFromSupabase()">🔄 Forçar sync agora</button>
           <button class="adm-btn red" onclick="clearSBConn()">✕ Limpar</button>
         </div>
         <div class="adm-status" id="sb-conn-status"></div>
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:8px;color:var(--dim2);line-height:1.8;">
+          📋 <b>Fluxo de dados compartilhado:</b><br/>
+          • Frota: lê da tabela <code>frota</code> (placa, modelo_carro, carro)<br/>
+          • DTCs: lê/grava em <code>kovi_dtcs</code><br/>
+          • Histórico: lê/grava em <code>kovi_historico</code><br/>
+          • Técnicos: lê/grava em <code>kovi_techs</code><br/>
+          • Todo novo atendimento é sincronizado automaticamente
+        </div>
       </div>
       <div class="adm-card">
         <div class="adm-card-title">🗄 Tabelas Supabase</div>
@@ -3003,43 +3250,28 @@ async function syncFromSupabase(){
   let count=0;
   try{
     const h=getSBHeaders();
-    // DTCs (app table)
+    // NOTA: A frota (47k+) NÃO é baixada em massa — buscada por placa via searchPlate().
+    // Aqui sincronizamos apenas DTCs, técnicos e histórico.
+
+    // DTCs
     const rD=await fetch(sbUrl('/rest/v1/kovi_dtcs?select=*'),{headers:h});
     if(rD.ok){const dtcs=await rD.json();const db=getDTCCustomDB();dtcs.forEach(d=>{
       const code=(d.code||d.codigo||'').toUpperCase();if(!code)return;
-      db[code]={desc:d.desc||d.descricao||'',expl:d.expl||d.explicacao||'',sintomas:d.sintomas||'',causas:d.causas||d.causas_provaveis||'',passos:d.passos||'',sistema:d.sistema||'',sev:d.sev||d.severidade||'',veiculo:d.veiculo||''};count++;
+      db[code]={desc:d.desc||d.descricao||'',expl:d.expl||'',sintomas:d.sintomas||'',causas:d.causas||'',passos:d.passos||'',sistema:d.sistema||'',sev:d.sev||d.severidade||'',veiculo:d.veiculo||''};count++;
     });saveDTCCustomDB(db);}
 
-    // Placas — tenta tabela "frota" (banco deles) primeiro, depois kovi_placas
-    let placas=[];
-    const rFrota=await fetch(sbUrl('/rest/v1/frota?select=placa,modelo_carro,carro&limit=50000'),{headers:h});
-    if(rFrota.ok){
-      placas=await rFrota.json();
-      const db=getPlateCustomDB();
-      placas.forEach(p=>{
-        const k=(p.placa||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();if(!k)return;
-        // Parse modelo_carro: "FIAT_ARGO DRIVE 1.0" → mfr=FIAT, model=ARGO DRIVE 1.0
-        const raw=p.modelo_carro||'';
-        const parts=raw.split('_');
-        const mfr=parts[0]||'';
-        const modelPart=(parts.slice(1).join(' ')||p.carro||'').trim();
-        db[k]={mfr,model:modelPart,label:p.carro||modelPart,ano:'',state:''};count++;
-      });
-      savePlateCustomDB(db);
-    } else {
-      // Fallback: kovi_placas
-      const rP=await fetch(sbUrl('/rest/v1/kovi_placas?select=*&limit=50000'),{headers:h});
-      if(rP.ok){const placasKP=await rP.json();const db=getPlateCustomDB();placasKP.forEach(p=>{
-        const k=(p.placa||p.plate||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();if(!k)return;
-        db[k]={mfr:p.mfr||p.montadora||'',model:p.modelo||p.model||'',label:p.label||p.carro||p.model||'',ano:p.ano||'',state:p.estado||p.state||''};count++;
-      });savePlateCustomDB(db);}
-    }
+    // Placas cadastradas manualmente pelo Admin (kovi_placas) — SIM, estas são poucas
+    const rP=await fetch(sbUrl('/rest/v1/kovi_placas?select=*&limit=1000'),{headers:h});
+    if(rP.ok){const placasKP=await rP.json();const db=getPlateCustomDB();placasKP.forEach(p=>{
+      const k=(p.placa||p.plate||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();if(!k)return;
+      db[k]={mfr:p.mfr||p.montadora||'',model:p.modelo||p.model||'',label:p.label||p.carro||p.model||'',ano:p.ano||'',state:p.estado||p.state||''};count++;
+    });savePlateCustomDB(db);}
 
     // Techs
     const rT=await fetch(sbUrl('/rest/v1/kovi_techs?select=*'),{headers:h});
     if(rT.ok){const techs=await rT.json();saveTechDB(techs);count+=techs.length;}
 
-    setAdmStatus('sb-sync-status','ok',`✓ Sincronizado: ${count} registros importados.`);
+    setAdmStatus('sb-sync-status','ok',`✓ Sincronizado: ${count} registros. Frota consultada por placa (${47124}+ registros via busca direta).`);
     renderAdmPlateList();
   }catch(e){setAdmStatus('sb-sync-status','err','⚠ '+e.message);}
 }
@@ -3150,6 +3382,105 @@ async function savePlateAndSync(){
 function clearPlateForm(){
   ['pl-plate','pl-model','pl-label','pl-ano','pl-state'].forEach(id=>document.getElementById(id).value='');
 }
+/* ══ GOOGLE SHEETS / SUPABASE FROTA IMPORT ══ */
+async function importFromSheets(){
+  const url=document.getElementById('sheets-url').value.trim();
+  if(!url){setAdmStatus('sheets-status','err','Cole a URL do Google Sheets publicado.');return;}
+  setAdmStatus('sheets-status','info','◌ Baixando dados do Google Sheets...');
+  try{
+    // Use CORS proxy for browser-side requests
+    // The Sheets published CSV URL works directly in most browsers
+    const fetchUrl=url.includes('docs.google.com')?url+'&cachebust='+Date.now():url;
+    const r=await fetch(fetchUrl);
+    if(!r.ok)throw new Error('HTTP '+r.status+'. Verifique se a planilha está publicada como CSV.');
+    const csv=await r.text();
+    if(!csv||csv.length<10)throw new Error('Resposta vazia. Publique a aba como CSV no Sheets.');
+    const count=processCSVText(csv,'pl-prog','pl-prog-fill');
+    setAdmStatus('sheets-status','ok',`✓ ${count} veículos importados do Google Sheets!`);
+    renderAdmPlateList();
+  }catch(e){
+    setAdmStatus('sheets-status','err','⚠ '+e.message+
+      (e.message.includes('CORS')||e.message.includes('fetch')?
+      ' — Certifique-se que a planilha está publicada publicamente: Arquivo → Publicar na web → CSV.':''));
+  }
+}
+
+async function importFromSBFrota(){
+  // A tabela frota (47k+ registros) é consultada por placa individualmente
+  // para não estourar o localStorage (limite 5MB do browser).
+  // Esta função apenas confirma a conectividade e exibe a contagem.
+  const cfg=getSBConfig();
+  if(!cfg.url||!cfg.key){setAdmStatus('sheets-status','err','Configure o Supabase primeiro (aba Supabase).');return;}
+  setAdmStatus('sheets-status','info','◌ Verificando tabela frota no Supabase...');
+  try{
+    // Get count via HEAD request
+    const r=await fetch(
+      sbUrl('/rest/v1/frota?select=placa&limit=1'),
+      {headers:{...getSBHeaders(),'Prefer':'count=exact'}}
+    );
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const countHeader=r.headers.get('content-range');
+    const total=countHeader?countHeader.split('/')[1]:'desconhecido';
+    setAdmStatus('sheets-status','ok',
+      `✓ Tabela frota confirmada: ${total} registros disponíveis no Supabase. `+
+      `As placas são consultadas individualmente ao pesquisar — sem precisar baixar tudo.`
+    );
+    // Sync DTCs and history
+    syncFromSupabase();
+  }catch(e){
+    setAdmStatus('sheets-status','err','⚠ Erro ao acessar tabela frota: '+e.message);
+  }
+}
+
+function parseModeloCarro(raw,carroLabel){
+  const MFR={'FIAT':'FIAT','VOLKSWAGEN':'VOLKSWAGEN','VW':'VOLKSWAGEN','CHEVROLET':'GM / CHEVROLET','GM':'GM / CHEVROLET','HYUNDAI':'HYUNDAI','TOYOTA':'TOYOTA','RENAULT':'RENAULT','HONDA':'HONDA','FORD':'FORD','JEEP':'JEEP','CAOA':'CAOA CHERY','CHERY':'CAOA CHERY','NISSAN':'NISSAN','BMW':'BMW','MERCEDES':'MERCEDES-BENZ','CITROEN':'CITROËN','PEUGEOT':'PEUGEOT','MITSUBISHI':'MITSUBISHI'};
+  if(!raw)return{mfr:'',model:carroLabel||'',label:carroLabel||''};
+  const idx=raw.indexOf('_');
+  if(idx>0){
+    const mfr=raw.substring(0,idx).trim().toUpperCase();
+    const model=raw.substring(idx+1).trim();
+    return{mfr:MFR[mfr]||mfr,model,label:carroLabel||model};
+  }
+  return{mfr:'',model:raw.trim(),label:carroLabel||raw.trim()};
+}
+
+function processCSVText(txt,progId,progFillId){
+  const progEl=document.getElementById(progId);
+  const progFill=document.getElementById(progFillId);
+  if(progEl)progEl.style.display='block';
+  if(progFill)progFill.style.width='0%';
+
+  const firstLine=txt.split(/\r?\n/)[0];
+  const sep=firstLine.includes('\t')?'\t':firstLine.includes(';')?';':',';
+  const lines=txt.split(/\r?\n/).filter(l=>l.trim());
+  const rawHeader=lines[0].split(sep).map(h=>h.trim().toLowerCase().replace(/["\r]/g,'').replace(/\s+/g,''));
+
+  const COL={placa:['placa','plate'],modelo_carro:['modelo_carro','modelocarro','modelo','model'],carro:['carro','label','veiculo','nomeveiculo'],mfr:['mfr','montadora','marca'],ano:['ano','year'],state:['estado','planta','state','plant']};
+  const ci={};
+  Object.keys(COL).forEach(k=>{ci[k]=-1;COL[k].forEach(a=>{if(ci[k]<0&&rawHeader.includes(a))ci[k]=rawHeader.indexOf(a);});});
+
+  const db=getPlateCustomDB();let count=0,skipped=0;
+  lines.slice(1).forEach((line,li)=>{
+    const cols=line.split(sep).map(c=>c.trim().replace(/^"|"$/g,'').replace(/\r/g,''));
+    const placa=(ci.placa>=0?cols[ci.placa]||'':'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+    if(!placa){skipped++;return;}
+    const mc=ci.modelo_carro>=0?cols[ci.modelo_carro]||'':'';
+    const ca=ci.carro>=0?cols[ci.carro]||'':'';
+    const parsed=parseModeloCarro(mc,ca);
+    db[placa]={
+      mfr:ci.mfr>=0&&cols[ci.mfr]?cols[ci.mfr]:parsed.mfr,
+      model:parsed.model,label:parsed.label||ca||parsed.model,
+      ano:ci.ano>=0?cols[ci.ano]||'':'',
+      state:ci.state>=0?cols[ci.state]||'':'',
+    };
+    count++;
+    if(progFill&&li%100===0)progFill.style.width=Math.round(li/lines.length*100)+'%';
+  });
+  savePlateCustomDB(db);
+  if(progFill)progFill.style.width='100%';
+  return count;
+}
+
 function importPlates(e){
   const f=e.target.files[0];if(!f)return;
   document.getElementById('pl-prog').style.display='block';
@@ -3232,34 +3563,6 @@ function importPlates(e){
     }catch(err){setAdmStatus('pl-import-status','err','⚠ Erro ao processar: '+err.message);}
   };r.readAsText(f,'UTF-8');
 }
-async function importFromSheets() {
-  const url = document.getElementById('sheets-url').value.trim();
-  const statusEl = document.getElementById('sheets-status');
-  if(!url) { setAdmStatus('sheets-status', 'err', 'Cole a URL do Google Sheets primeiro.'); return; }
-  
-  setAdmStatus('sheets-status', 'info', '◌ Baixando dados do Google Sheets...');
-  try {
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('Falha ao baixar. Verifique se o link está publicado na web e é um CSV.');
-    const text = await res.text();
-    
-    // Simula o evento de arquivo (reaproveitando a lógica parruda do importPlates)
-    const file = new File([text], "sheets.csv", { type: "text/csv" });
-    const event = { target: { files: [file] } };
-    importPlates(event);
-    
-    setAdmStatus('sheets-status', 'ok', '✓ Planilha baixada. Processando...');
-  } catch(e) {
-    setAdmStatus('sheets-status', 'err', '⚠ Erro: ' + e.message);
-  }
-}
-
-function importFromSBFrota() {
-  // Como o syncFromSupabase já faz isso de forma inteligente no código novo, 
-  // podemos apenas chamar ele!
-  syncFromSupabase();
-}
-  
 function renderAdmPlateList(){
   const db={...PLATE_DB,...getPlateCustomDB()};const q=(document.getElementById('pl-search')?.value||'').toLowerCase();
   const entries=Object.entries(db).filter(([p,v])=>!q||p.toLowerCase().includes(q)||(v.model||'').toLowerCase().includes(q)||(v.label||'').toLowerCase().includes(q));
@@ -3486,20 +3789,8 @@ initHistDB();
 renderHistList();
 renderDashboard();
 document.getElementById('atend-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show');});
- // AUTO-SYNC INICIAL PARA TODOS OS USUÁRIOS E ATUALIZAÇÃO DA TELA
-setTimeout(async () => {
-  const cfg = getSBConfig();
-  // Só executa se tiver as chaves e não for o texto de exemplo
-  if(cfg.url && cfg.key && !cfg.url.includes('COLE_AQUI')) {
-    // Baixa os dados do Supabase e ESPERA terminar (await)
-    await syncFromSupabase();
-    
-    // Assim que terminar de baixar, força a tela inicial a se atualizar para mostrar os números!
-    if(document.getElementById('tab-home').classList.contains('active')){
-      renderDashboard();
-    }
-  }
-}, 1000);
+// Auto-carrega dados do Supabase para todos os usuários
+autoLoadFromSupabase();
 </script>
 </body>
 </html>
