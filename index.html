@@ -740,7 +740,7 @@ select.adm-input{cursor:pointer;}
 
 <!-- NAV -->
 <div id="nav">
-  <div class="logo"><span class="logo-kovi">KOVI</span><span class="logo-sep">//</span><span class="logo-diag">DIAG</span><span class="logo-ver">v11</span></div>
+  <div class="logo"><span class="logo-kovi">KOVI</span><span class="logo-sep">//</span><span class="logo-diag">DIAG</span><span class="logo-ver"></span></div>
   <div class="nav-tab active" data-tab="home" onclick="switchTab('home')">🏠 INÍCIO</div>
   <div class="nav-tab" data-tab="diag" onclick="switchTab('diag')">⚡ DIAGNÓSTICO</div>
   <div class="nav-tab" data-tab="esq" onclick="switchTab('esq')">◤ ESQUEMAS</div>
@@ -1081,6 +1081,46 @@ document.getElementById('modal-key-input').addEventListener('keydown',e=>{if(e.k
 ════════════════════════════════════════════ */
 document.getElementById('plate-in').addEventListener('keydown',e=>{if(e.key==='Enter')searchPlate();});
 function normP(p){return p.replace(/[^A-Za-z0-9]/g,'').toUpperCase().trim();}
+/* Converte linha de kovi_placas → objeto veículo */
+function parsePlacasRow(p){
+  const raw=p.model||p.modelo||'';
+  const idx=raw.indexOf('_');
+  const mfrRaw=idx>0?raw.substring(0,idx):'';
+  const model=idx>0?raw.substring(idx+1).trim():(p.label||raw);
+  const MFR={FIAT:'FIAT',VOLKSWAGEN:'VOLKSWAGEN',VW:'VOLKSWAGEN',CHEVROLET:'GM / CHEVROLET',GM:'GM / CHEVROLET',HYUNDAI:'HYUNDAI',TOYOTA:'TOYOTA',RENAULT:'RENAULT',HONDA:'HONDA',FORD:'FORD',JEEP:'JEEP'};
+  return{mfr:p.mfr||MFR[mfrRaw.toUpperCase()]||mfrRaw,model,label:p.label||model,ano:p.ano||'',state:p.state||p.estado||''};
+}
+
+/* Busca placa em ambas as tabelas Supabase: frota e kovi_placas */
+async function queryPlateFromSB(k){
+  if(!hasSBConfig())return null;
+  const headers=getSBHeaders();
+  // 1. tabela frota (formato placa / modelo_carro / carro)
+  try{
+    const r1=await fetch(sbUrl(`/rest/v1/frota?select=placa,modelo_carro,carro&placa=eq.${encodeURIComponent(k)}&limit=1`),{headers});
+    if(r1.ok){
+      const rows=await r1.json();
+      if(rows&&rows.length>0){
+        const p=rows[0];
+        const raw=p.modelo_carro||''; const idx=raw.indexOf('_');
+        const mfrRaw=idx>0?raw.substring(0,idx):'';
+        const model=idx>0?raw.substring(idx+1).trim():(p.carro||raw);
+        const MFR={FIAT:'FIAT',VOLKSWAGEN:'VOLKSWAGEN',VW:'VOLKSWAGEN',CHEVROLET:'GM / CHEVROLET',GM:'GM / CHEVROLET',HYUNDAI:'HYUNDAI',TOYOTA:'TOYOTA',RENAULT:'RENAULT',HONDA:'HONDA',FORD:'FORD',JEEP:'JEEP'};
+        return{mfr:MFR[mfrRaw.toUpperCase()]||mfrRaw,model,label:p.carro||model,ano:'',state:''};
+      }
+    }
+  }catch(e){console.warn('[KOVI] frota query err:',e.message);}
+  // 2. tabela kovi_placas (formato plate / model / label)
+  try{
+    const r2=await fetch(sbUrl(`/rest/v1/kovi_placas?select=plate,model,label,mfr,ano,state&plate=eq.${encodeURIComponent(k)}&limit=1`),{headers});
+    if(r2.ok){
+      const rows=await r2.json();
+      if(rows&&rows.length>0)return parsePlacasRow(rows[0]);
+    }
+  }catch(e){console.warn('[KOVI] kovi_placas query err:',e.message);}
+  return null;
+}
+
 /* Cache de placas buscadas na sessão (evita repetir queries) */
 const PLATE_CACHE={};
 
@@ -1114,29 +1154,15 @@ async function searchPlate(){
   const manualPlates=getPlateCustomDB();
   if(manualPlates[k]){PLATE_CACHE[k]=manualPlates[k];applyPlateFound(manualPlates[k],inp,msg,raw);return;}
 
-  // 4. Supabase — busca direta (não armazena todas no localStorage)
-  if(hasSBConfig()){
-    msg.textContent='⏳ Consultando banco...'; msg.className='plate-msg';
-    inp.classList.add('warn');
-    try{
-      const res=await fetch(
-        sbUrl(`/rest/v1/frota?select=plate,model,mfr,ano,state&plate=eq.${encodeURIComponent(k)}&limit=1`),
-        {headers:getSBHeaders()}
-      );
-      if(res.ok){
-        const rows=await res.json();
-        if(rows&&rows.length>0){
-          const p=rows[0];
-          const found={mfr:p.mfr||'', model:p.model||'', label:p.label||p.model||'', ano:p.ano||'', state:p.state||''};
-          PLATE_CACHE[k]=found;
-          inp.classList.remove('warn');
-          applyPlateFound(found,inp,msg,raw);
-          return;
-        }
-      }
-    }catch(e){
-      console.warn('[KOVI] Erro ao buscar placa no SB:',e.message);
-    }
+  // 4. Supabase — frota + kovi_placas
+  msg.textContent='⏳ Consultando banco...'; msg.className='plate-msg';
+  inp.classList.add('warn');
+  const found=await queryPlateFromSB(k);
+  if(found){
+    PLATE_CACHE[k]=found;
+    inp.classList.remove('warn');
+    applyPlateFound(found,inp,msg,raw);
+    return;
   }
 
   // Não encontrada
@@ -2239,30 +2265,108 @@ function initDLCFields(){
   [['dlc::descricao','Descrição genérica dos terminais DLC'],['dlc::localizacao','Localização do conector DLC']].forEach(([k,l])=>grid.appendChild(buildImgField(k,l,'esqImgs')));
 }
 function buildImgField(key,label,store){
+  const isAdm=sessionStorage.getItem('kovi_adm_ok')==='1';
   const wrap=document.createElement('div');wrap.className='img-field';
   const lbl=document.createElement('span');lbl.className='img-field-lbl';lbl.textContent=label;wrap.appendChild(lbl);
   const fid='f-'+key.replace(/[^a-z0-9]/gi,'-');const did='d-'+key.replace(/[^a-z0-9]/gi,'-');
-  const finp=document.createElement('input');finp.type='file';finp.accept='image/*';finp.className='hidden-file';finp.id=fid;
-  finp.addEventListener('change',e=>loadEsqImg(e,key,store,did,fid));
   const drop=document.createElement('div');drop.className='img-drop';drop.id=did;
-  if(S[store][key])renderEsqFilled(drop,key,store,fid,S[store][key]);
-  else{drop.innerHTML=`<div class="img-ph"><div class="img-plus">+</div><div class="img-lbl">INSERIR IMAGEM</div><div class="img-hint">Clique para selecionar</div></div>`;drop.onclick=()=>finp.click();}
-  wrap.appendChild(finp);wrap.appendChild(drop);return wrap;
+
+  if(S[store][key]){
+    renderEsqFilled(drop,key,store,fid,S[store][key],isAdm);
+  } else if(isAdm){
+    // Admin: mostra campo de upload
+    const finp=document.createElement('input');finp.type='file';finp.accept='image/*';finp.className='hidden-file';finp.id=fid;
+    finp.addEventListener('change',e=>loadEsqImg(e,key,store,did,fid));
+    wrap.appendChild(finp);
+    drop.innerHTML=`<div class="img-ph"><div class="img-plus">+</div><div class="img-lbl">INSERIR IMAGEM</div><div class="img-hint">Clique para selecionar (admin)</div></div>`;
+    drop.onclick=()=>finp.click();
+  } else {
+    // Usuário normal: sem imagem
+    drop.innerHTML=`<div class="img-ph"><div class="img-plus" style="color:var(--dim2);font-size:16px;">🔒</div><div class="img-lbl" style="color:var(--dim2);">SEM IMAGEM</div><div class="img-hint">Aguardando inserção pelo administrador</div></div>`;
+  }
+  wrap.appendChild(drop);return wrap;
 }
+
 function loadEsqImg(e,key,store,did,fid){
   const f=e.target.files[0];if(!f)return;
-  const r=new FileReader();r.onload=ev=>{S[store][key]=ev.target.result;const d=document.getElementById(did);if(d)renderEsqFilled(d,key,store,fid,ev.target.result);};r.readAsDataURL(f);
+  const r=new FileReader();
+  r.onload=async ev=>{
+    const data=ev.target.result;
+    S[store][key]=data;
+    const d=document.getElementById(did);
+    if(d)renderEsqFilled(d,key,store,fid,data,true);
+    // Persistir no Supabase
+    await saveEsqImgToSB(key,data);
+  };
+  r.readAsDataURL(f);
 }
-function renderEsqFilled(drop,key,store,fid,src){
+
+function renderEsqFilled(drop,key,store,fid,src,isAdm){
   drop.className='img-drop filled';drop.onclick=null;
+  const adminBtns=isAdm?`<button class="ibtn sw" onclick="document.getElementById('${fid}') && document.getElementById('${fid}').click()">TROCAR</button><button class="ibtn dl" onclick="clearEsqImg('${drop.id}','${key}','${store}','${fid}')">✕</button>`:'';
   drop.innerHTML=`<img class="img-prev" src="${src}" alt=""/>
-    <div class="img-acts"><button class="ibtn sw" onclick="document.getElementById('${fid}').click()">TROCAR</button><button class="ibtn dl" onclick="clearEsqImg('${drop.id}','${key}','${store}','${fid}')">✕</button></div>`;
-  const img=drop.querySelector('img');img.onclick=ev=>{ev.stopPropagation();openLB(src,key.split('::').slice(-1)[0]);};
+    <div class="img-acts">${adminBtns}</div>`;
+  // Garante que o input de arquivo existe para admin
+  if(isAdm&&!document.getElementById(fid)){
+    const finp=document.createElement('input');finp.type='file';finp.accept='image/*';finp.className='hidden-file';finp.id=fid;
+    finp.addEventListener('change',ev=>loadEsqImg(ev,key,store,drop.id,fid));
+    drop.appendChild(finp);
+  }
+  const img=drop.querySelector('img');if(img)img.onclick=ev=>{ev.stopPropagation();openLB(src,key.split('::').slice(-1)[0]);};
 }
-function clearEsqImg(did,key,store,fid){
-  delete S[store][key];const d=document.getElementById(did);if(!d)return;
-  d.className='img-drop';d.onclick=()=>document.getElementById(fid).click();
+
+async function clearEsqImg(did,key,store,fid){
+  delete S[store][key];
+  const d=document.getElementById(did);if(!d)return;
+  d.className='img-drop';
+  if(document.getElementById(fid)){
+    d.onclick=()=>document.getElementById(fid).click();
+  }
   d.innerHTML=`<div class="img-ph"><div class="img-plus">+</div><div class="img-lbl">INSERIR IMAGEM</div><div class="img-hint">Clique para selecionar</div></div>`;
+  // Remover do Supabase
+  await deleteEsqImgFromSB(key);
+}
+
+/* ── Supabase: salvar esquema ── */
+async function saveEsqImgToSB(key,data){
+  if(!hasSBConfig())return;
+  try{
+    await fetch(sbUrl('/rest/v1/kovi_esquemas'),{
+      method:'POST',
+      headers:{...getSBHeaders(),'Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({id:key,image_data:data,updated_at:new Date().toISOString()})
+    });
+  }catch(e){console.warn('[KOVI] Erro ao salvar esquema no SB:',e.message);}
+}
+
+/* ── Supabase: remover esquema ── */
+async function deleteEsqImgFromSB(key){
+  if(!hasSBConfig())return;
+  try{
+    await fetch(sbUrl(`/rest/v1/kovi_esquemas?id=eq.${encodeURIComponent(key)}`),{
+      method:'DELETE',headers:getSBHeaders()
+    });
+  }catch(e){console.warn('[KOVI] Erro ao remover esquema no SB:',e.message);}
+}
+
+/* ── Supabase: carregar todos os esquemas ── */
+async function loadEsqImgsFromSB(){
+  if(!hasSBConfig())return;
+  try{
+    const r=await fetch(sbUrl('/rest/v1/kovi_esquemas?select=id,image_data'),{headers:getSBHeaders()});
+    if(!r.ok)return;
+    const rows=await r.json();
+    if(!Array.isArray(rows)||!rows.length)return;
+    rows.forEach(row=>{
+      if(row.id&&row.image_data){
+        S.esqImgs[row.id]=row.image_data;
+      }
+    });
+    console.log(`[KOVI] Esquemas: ${rows.length} imagens carregadas do Supabase.`);
+    // Re-render campos de imagem se aba Esquemas estiver visível
+    const esqTab=document.querySelector('.esq-ni.active');
+    if(esqTab)esqTab.click();
+  }catch(e){console.warn('[KOVI] Erro ao carregar esquemas:',e.message);}
 }
 
 /* ════════════════════════════════════════════
@@ -2416,27 +2520,16 @@ async function autoFillPlateModal(plate){
     if(hint)hint.textContent='✓ '+local.label;
     return;
   }
-  // 3. Supabase direto
+  // 3. Supabase: frota + kovi_placas
   if(hasSBConfig()){
     if(hint)hint.textContent='⏳ Consultando...';
-    try{
-      const res=await fetch(sbUrl(`/rest/v1/frota?select=placa,modelo_carro,carro&placa=eq.${encodeURIComponent(plate)}&limit=1`),{headers:getSBHeaders()});
-      if(res.ok){
-        const rows=await res.json();
-        if(rows&&rows.length>0){
-          const p=rows[0];
-          const raw=p.modelo_carro||''; const idx=raw.indexOf('_');
-          const mfrRaw=idx>0?raw.substring(0,idx):'';
-          const model=idx>0?raw.substring(idx+1).trim():(p.carro||raw);
-          const MFR={FIAT:'FIAT',VOLKSWAGEN:'VOLKSWAGEN',VW:'VOLKSWAGEN',CHEVROLET:'GM / CHEVROLET',GM:'GM / CHEVROLET',HYUNDAI:'HYUNDAI',TOYOTA:'TOYOTA',RENAULT:'RENAULT',HONDA:'HONDA',FORD:'FORD',JEEP:'JEEP'};
-          const found={mfr:MFR[mfrRaw.toUpperCase()]||mfrRaw,model,label:p.carro||model,ano:'',state:''};
-          PLATE_CACHE[plate]=found;
-          document.getElementById('na-model').value=found.label||found.model||'';
-          if(hint)hint.textContent='✓ '+(found.label||found.model);
-          return;
-        }
-      }
-    }catch(e){}
+    const found=await queryPlateFromSB(plate);
+    if(found){
+      PLATE_CACHE[plate]=found;
+      document.getElementById('na-model').value=found.label||found.model||'';
+      if(hint)hint.textContent='✓ '+(found.label||found.model);
+      return;
+    }
     if(hint)hint.textContent='';
   }
 }
@@ -2671,6 +2764,9 @@ async function autoLoadFromSupabase(){
       if(Array.isArray(techs)&&techs.length>0){saveTechDB(techs);total+=techs.length;}
     }
 
+    // 5. Esquemas elétricos (imagens salvas pelos admins)
+    await loadEsqImgsFromSB();
+
     SB_CONNECTED=true;
     SB_LOAD_STATUS='done';
     updateSBLoadBanner('done', total);
@@ -2824,13 +2920,13 @@ UPDATE frota SET mfr = split_part(modelo_carro, '_', 1) WHERE mfr IS NULL;
 -- Índice para busca rápida por placa:
 CREATE UNIQUE INDEX IF NOT EXISTS idx_frota_placa ON frota(placa);</div>
 
-        <div id="sql-kovi" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:9px;color:var(--cyan);font-family:var(--mono);white-space:pre-wrap;line-height:1.8;max-height:220px;overflow-y:auto;">-- Tabela para placas do app (compatível com frota existente):
+        <div id="sql-kovi" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:9px;color:var(--cyan);font-family:var(--mono);white-space:pre-wrap;line-height:1.8;max-height:220px;overflow-y:auto;">-- Tabela kovi_placas (placas extras cadastradas pelo admin):
+-- ATENÇÃO: sua tabela já existe com coluna "plate" (não "placa")
+-- Rode apenas se ainda não existir:
 CREATE TABLE IF NOT EXISTS kovi_placas (
-  placa TEXT PRIMARY KEY,
-  plate TEXT GENERATED ALWAYS AS (placa) STORED,
-  mfr TEXT, modelo TEXT, model TEXT,
-  label TEXT, carro TEXT,
-  ano TEXT, estado TEXT, state TEXT,
+  plate TEXT PRIMARY KEY,
+  mfr TEXT, model TEXT,
+  label TEXT, ano TEXT, state TEXT,
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -2859,7 +2955,16 @@ CREATE TABLE IF NOT EXISTS kovi_historico (
   date TEXT, dtcs TEXT[],
   solution TEXT, km INT,
   status TEXT, created_at TIMESTAMPTZ DEFAULT now()
-);</div>
+);
+
+-- ⭐ ESQUEMAS ELÉTRICOS (imagens persistentes para todos os usuários):
+CREATE TABLE IF NOT EXISTS kovi_esquemas (
+  id TEXT PRIMARY KEY,
+  image_data TEXT,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE kovi_esquemas ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow_all" ON kovi_esquemas FOR ALL USING (true);</div>
 
         <div id="sql-rls" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:9px;color:var(--cyan);font-family:var(--mono);white-space:pre-wrap;line-height:1.8;max-height:220px;overflow-y:auto;">-- 1. Habilitar RLS nas tabelas (recomendado):
 ALTER TABLE frota ENABLE ROW LEVEL SECURITY;
