@@ -2534,7 +2534,7 @@ function openNewAtendimento(plate='',model=''){
   // Populate plants dropdown
   const stateSel=document.getElementById('na-state');
   const existingPlants=[...new Set(getHistDB().map(h=>h.state).filter(Boolean))];
-  const defaultPlants=['SP - Planta 01','MG - Planta 02','RJ - Planta 03','RS - Planta 04','BA - Planta 05'];
+  const defaultPlants=['JURUBATUBA, POA'];
   const allPlants=[...new Set([...existingPlants,...defaultPlants])];
   stateSel.innerHTML='';
   allPlants.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;stateSel.appendChild(o);});
