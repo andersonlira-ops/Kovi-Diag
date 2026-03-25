@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>KOVI // DIAG </title>
+<title>KOVI // DIAG</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -665,7 +665,25 @@ select.adm-input{cursor:pointer;}
   </div>
 </div>
 
-<!-- PRINT SELECT MODAL -->
+<!-- MASTER PASSWORD MODAL (somente desenvolvedor) -->
+<div id="master-pw-modal" class="modal-overlay">
+  <div class="modal-box" style="width:420px;">
+    <div class="modal-title" style="color:var(--yellow);">🔑 Acesso Master — Desenvolvedor</div>
+    <p style="font-size:10px;color:var(--muted);margin-bottom:14px;line-height:1.8;">
+      Acesso exclusivo para inserir, editar ou remover esquemas elétricos.<br/>
+      Apenas o desenvolvedor possui esta senha.
+    </p>
+    <input type="password" class="modal-input" id="master-pw-input" placeholder="Senha master..." onkeydown="if(event.key==='Enter')checkMasterPw()"/>
+    <div class="modal-row">
+      <button class="ab-btn orange" onclick="checkMasterPw()" style="padding:8px 20px;font-size:9px;">🔓 ENTRAR</button>
+      <button class="ab-btn" onclick="document.getElementById('master-pw-modal').classList.remove('show')" style="padding:8px 20px;font-size:9px;">CANCELAR</button>
+    </div>
+    <div class="modal-status" id="master-pw-status"></div>
+    <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--border);font-size:8px;color:var(--dim2);line-height:1.8;">
+      🔒 Senha protegida por hash SHA-256. Contate o desenvolvedor para obter acesso.
+    </div>
+  </div>
+</div>
 <div id="print-modal" class="modal-overlay">
   <div class="modal-box" style="width:400px;">
     <div class="modal-title">🖨 Imprimir Relatório</div>
@@ -686,39 +704,41 @@ select.adm-input{cursor:pointer;}
     <div class="modal-title">➕ Novo Atendimento</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
       <div>
-        <div style="font-size:8px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">Placa *</div>
-        <input class="modal-input" id="na-plate" placeholder="ABC1D23" style="margin:0;" oninput="this.value=this.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();autoFillPlateModal(this.value)" onkeydown="if(event.key==='Enter')autoFillPlateModal(this.value)"/>
+        <div style="font-size:8px;color:var(--orange);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;font-weight:600;">Placa *</div>
+        <input class="modal-input" id="na-plate" placeholder="ex: ABC1D23" style="margin:0;background:var(--card2);border-color:var(--border3);color:var(--text);" oninput="this.value=this.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();autoFillPlateModal(this.value)" onkeydown="if(event.key==='Enter')autoFillPlateModal(this.value)"/>
         <div id="na-plate-hint" style="font-size:8px;color:var(--green);margin-top:3px;min-height:12px;"></div>
       </div>
       <div>
-        <div style="font-size:8px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">Modelo *</div>
-        <input class="modal-input" id="na-model" placeholder="Fiat Argo 1.0 2022" style="margin:0;"/>
+        <div style="font-size:8px;color:var(--orange);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;font-weight:600;">Modelo *</div>
+        <input class="modal-input" id="na-model" placeholder="ex: Fiat Argo 1.0 2022" style="margin:0;background:var(--card2);border-color:var(--border3);color:var(--text);"/>
       </div>
       <div>
-        <div style="font-size:8px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">Estado / Planta</div>
-        <select class="modal-input" id="na-state" style="margin:0;cursor:pointer;"></select>
+        <div style="font-size:8px;color:var(--orange);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;font-weight:600;">Estado / Planta</div>
+        <select class="modal-input" id="na-state" style="margin:0;cursor:pointer;background:var(--card2);border-color:var(--border3);color:var(--text);">
+          <option value="JURUBATUBA">JURUBATUBA</option>
+          <option value="POA">POA</option>
+        </select>
       </div>
       <div>
-        <div style="font-size:8px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">Técnico</div>
-        <select class="modal-input" id="na-tech" style="margin:0;cursor:pointer;"></select>
+        <div style="font-size:8px;color:var(--orange);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;font-weight:600;">Técnico</div>
+        <input class="modal-input" id="na-tech" placeholder="Nome do técnico..." style="margin:0;background:var(--card2);border-color:var(--border3);color:var(--text);" list="na-tech-list"/>
+        <datalist id="na-tech-list"></datalist>
       </div>
     </div>
-    <div style="font-size:8px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">DTCs (separados por vírgula) *</div>
-    <input class="modal-input" id="na-dtcs" placeholder="P0300, P0301, U0100" oninput="this.value=this.value.toUpperCase()" style="letter-spacing:1.5px;"/>
-    <div style="font-size:8px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">Solução aplicada</div>
-    <textarea class="modal-input" id="na-solution" rows="3" placeholder="Descreva o que foi feito para resolver o problema..." style="resize:vertical;"></textarea>
+    <div style="font-size:8px;color:var(--orange);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;font-weight:600;">DTCs (separados por vírgula) *</div>
+    <input class="modal-input" id="na-dtcs" placeholder="ex: P0300, P0301, U0100" oninput="this.value=this.value.toUpperCase()" style="letter-spacing:1.5px;background:var(--card2);border-color:var(--border3);color:var(--text);"/>
+    <div style="font-size:8px;color:var(--orange);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;font-weight:600;">Solução aplicada</div>
+    <textarea class="modal-input" id="na-solution" rows="3" placeholder="Descreva o que foi feito para resolver o problema..." style="resize:vertical;background:var(--card2);border-color:var(--border3);color:var(--text);"></textarea>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div>
-        <div style="font-size:8px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">KM do veículo</div>
-        <input class="modal-input" id="na-km" placeholder="50000" type="number" style="margin:0;"/>
+        <div style="font-size:8px;color:var(--orange);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;font-weight:600;">KM do veículo</div>
+        <input class="modal-input" id="na-km" placeholder="ex: 50000" type="number" style="margin:0;background:var(--card2);border-color:var(--border3);color:var(--text);"/>
       </div>
       <div>
-        <div style="font-size:8px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">Status</div>
-        <select class="modal-input" id="na-status-sel" style="margin:0;cursor:pointer;">
-          <option value="registrado">Registrado</option>
-          <option value="em_andamento">Em andamento</option>
-          <option value="resolvido">Resolvido</option>
-          <option value="aguardando_peca">Aguardando peça</option>
+        <div style="font-size:8px;color:var(--orange);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;font-weight:600;">Status</div>
+        <select class="modal-input" id="na-status-sel" style="margin:0;cursor:pointer;background:var(--card2);border-color:var(--border3);color:var(--text);">
+          <option value="resolvido">✅ RESOLVIDO</option>
+          <option value="nao_resolvido">❌ NÃO RESOLVIDO</option>
         </select>
       </div>
     </div>
@@ -740,7 +760,7 @@ select.adm-input{cursor:pointer;}
 
 <!-- NAV -->
 <div id="nav">
-  <div class="logo"><span class="logo-kovi">KOVI</span><span class="logo-sep">//</span><span class="logo-diag">DIAG</span><span class="logo-ver"></span></div>
+  <div class="logo"><span class="logo-kovi">KOVI</span><span class="logo-sep">//</span><span class="logo-diag">DIAG</span><span class="logo-ver">v11</span></div>
   <div class="nav-tab active" data-tab="home" onclick="switchTab('home')">🏠 INÍCIO</div>
   <div class="nav-tab" data-tab="diag" onclick="switchTab('diag')">⚡ DIAGNÓSTICO</div>
   <div class="nav-tab" data-tab="esq" onclick="switchTab('esq')">◤ ESQUEMAS</div>
@@ -879,15 +899,25 @@ select.adm-input{cursor:pointer;}
       <div class="esq-view active" id="esqv-dlc">
         <div class="esq-title-row">
           <div class="esq-title-l"><div class="esq-tbar"></div><div class="esq-ttxt">Conector de Diagnóstico (DLC)</div></div>
-          <button class="btn-print-esq" onclick="printSection('esqv-dlc')">🖨 Imprimir</button>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <div id="esq-master-badge" style="font-size:8px;padding:3px 8px;border-radius:3px;display:none;"></div>
+            <button id="esq-master-btn" class="btn-print-esq" style="border-color:var(--yellow);color:var(--yellow);" onclick="openMasterAccess()">🔑 Acesso Master</button>
+            <button id="esq-save-btn" class="btn-print-esq" style="display:none;border-color:var(--green);color:var(--green);" onclick="saveAllEsqToSB()">💾 Salvar no Supabase</button>
+            <button class="btn-print-esq" onclick="printSection('esqv-dlc')">🖨 Imprimir</button>
+          </div>
         </div>
+        <div id="esq-save-status" style="font-size:9px;margin-bottom:10px;min-height:14px;"></div>
         <div class="img-fields-grid" style="grid-template-columns:1fr 1fr;" id="dlc-fields"></div>
       </div>
       <div class="esq-view" id="esqv-comp">
         <div class="esq-title-row">
           <div class="esq-title-l"><div class="esq-tbar"></div><div class="esq-ttxt" id="esq-comp-title"></div></div>
-          <button class="btn-print-esq" onclick="printSection('esqv-comp')">🖨 Imprimir</button>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <button id="esq-save-btn-comp" class="btn-print-esq" style="display:none;border-color:var(--green);color:var(--green);" onclick="saveAllEsqToSB()">💾 Salvar no Supabase</button>
+            <button class="btn-print-esq" onclick="printSection('esqv-comp')">🖨 Imprimir</button>
+          </div>
         </div>
+        <div id="esq-save-status-comp" style="font-size:9px;margin-bottom:10px;min-height:14px;"></div>
         <div class="img-fields-grid" id="esq-comp-fields"></div>
       </div>
     </div>
@@ -919,12 +949,8 @@ select.adm-input{cursor:pointer;}
   </div>
 
   <!-- ══ REDE ══ -->
-  <div id="tab-rede" class="tab-page">
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;gap:12px;">
-      <div class="ph-icon">🌐</div>
-      <div class="ph-title">Rede Kovi</div>
-      <div class="ph-sub">Integração com outras plantas em breve</div>
-    </div>
+  <div id="tab-rede" class="tab-page" style="flex-direction:column;overflow-y:auto;background:var(--bg);">
+    <div id="rede-root" style="padding:20px 24px;max-width:1200px;margin:0 auto;width:100%;"></div>
   </div>
 
   <!-- ══ ADMIN ══ -->
@@ -1000,7 +1026,20 @@ function getHistDB(){
 }
 function saveHistDB(db){localStorage.setItem('kovi_hist_v11',JSON.stringify(db));}
 function initHistDB(){
-  // Modo produção ativado
+  let db=getHistDB();
+  if(db.length>0) return;
+  // Seed with sample multi-plant data
+  const seed=[
+    {id:'H001',plate:'QSV2B28',model:'Volkswagen Polo Track 1.0',state:'SP - Planta 01',tech:'Carlos M.',date:'2025-11-15',dtcs:['P0300','P0301'],solution:'Substituição das velas de ignição jogo completo. Limpeza dos bicos injetores. Verificado sistema de ignição. Veiculo apresentava consumo elevado e falta de potência.',km:32400,status:'resolvido'},
+    {id:'H002',plate:'GIW1H03',model:'Fiat Argo 1.0 2022',state:'SP - Planta 01',tech:'Rodrigo S.',date:'2025-11-20',dtcs:['B1035'],solution:'Alinhamento PROXI realizado via scanner. Verificados conectores da UCE da direção elétrica. Mau contato no conector X3 do módulo, limpo e recolocado.',km:18900,status:'resolvido'},
+    {id:'H003',plate:'TAU5F69',model:'Chevrolet Onix 1.0 MT HB',state:'MG - Planta 02',tech:'Felipe A.',date:'2025-11-22',dtcs:['P0301'],solution:'Substituição da vela de ignição do cilindro 1. Teste de compressão realizado. Todos cilindros dentro da especificação. Teste de estrada OK.',km:10200,status:'resolvido'},
+    {id:'H004',plate:'KJH3F45',model:'Volkswagen Polo Track 1.0',state:'RJ - Planta 03',tech:'Marcos P.',date:'2025-11-28',dtcs:['P0300','U0001'],solution:'Mau contato no barramento CAN. Conector C45 oxidado. Substituição do trecho do chicote afetado. Resetado memória do ECM.',km:41200,status:'resolvido'},
+    {id:'H005',plate:'MNO7K22',model:'Volkswagen Polo Track 1.0',state:'RS - Planta 04',tech:'Paulo H.',date:'2025-12-01',dtcs:['P0300','P0302'],solution:'Bobinas de ignição dos cilindros 1 e 2 substituídas. Velas inspecionadas. Filtro de combustível trocado. Motor normalizado após 30 minutos.',km:28700,status:'resolvido'},
+    {id:'H006',plate:'ABC1D23',model:'VW Polo 1.0 2018',state:'SP - Planta 01',tech:'Carlos M.',date:'2025-12-05',dtcs:['P0420'],solution:'Sensor O2 pós-catalisador com sinal degradado. Substituição do sensor. Catalisador inspecionado - dentro dos limites. Monitor EVAP OK após 2 ciclos.',km:65300,status:'resolvido'},
+    {id:'H007',plate:'PRQ8L11',model:'Fiat Argo 1.3 2022',state:'BA - Planta 05',tech:'Rafael T.',date:'2025-12-08',dtcs:['C1215','C0020'],solution:'Interruptor do pedal de freio com folga excessiva. Ajuste mecânico e troca do interruptor. Bomba ABS testada. Motor da bomba OK. Sangria realizada.',km:22100,status:'resolvido'},
+    {id:'H008',plate:'QSV2B28',model:'Volkswagen Polo Track 1.0',state:'SP - Planta 01',tech:'Rodrigo S.',date:'2025-12-10',dtcs:['P0300'],solution:'Segunda ocorrência de falha de ignição. Verificado sistema de combustível - pressão baixa (2.1 bar, spec 3.0 bar). Bomba de combustível substituída. Injetores testados.',km:35800,status:'resolvido'},
+  ];
+  saveHistDB(seed);
 }
 
 /* ════════════════════════════════════════════
@@ -1292,7 +1331,7 @@ function renderCenter(code){
         </div>
         ${histBadge}
         <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
-          <button class="btn-regen" id="btn-regen" onclick="regenIA('${code}')">⚡ Analisar com IA</button>
+          <button class="btn-regen" id="btn-regen" onclick="regenIAAdaptive('${code}')">🧠 Agente IA — Diagnóstico inteligente</button>
           <button class="btn-print-diag" onclick="printDiag()">🖨 Imprimir</button>
         </div>
       </div>
@@ -1940,6 +1979,8 @@ function switchTab(tab){
   if(tab==='hist')renderHistList();
   if(tab==='home')renderDashboard();
   if(tab==='admin')renderAdmin();
+  if(tab==='rede')loadRedeKovi();
+  if(tab==='esq')updateMasterUI(isMaster()); // refresh master buttons on esq tab
 }
 
 /* ════════════════════════════════════════════
@@ -2522,23 +2563,19 @@ async function autoFillPlateModal(plate){
 }
 
 function openNewAtendimento(plate='',model=''){
-  // Populate techs dropdown
-  const techSel=document.getElementById('na-tech');
-  techSel.innerHTML='<option value="">— Selecionar técnico —</option>';
-  getTechDB().filter(t=>t.active).forEach(t=>{
-    const o=document.createElement('option');o.value=t.name;o.textContent=t.name+(t.plant?' ('+t.plant+')':'');techSel.appendChild(o);
-  });
-  // Fallback: type-in option
-  const oOther=document.createElement('option');oOther.value='__other__';oOther.textContent='✏ Digitar nome...';techSel.appendChild(oOther);
+  // Populate tech datalist (autocomplete from kovi_techs)
+  const techList=document.getElementById('na-tech-list');
+  if(techList){
+    techList.innerHTML='';
+    getTechDB().filter(t=>t.active).forEach(t=>{
+      const o=document.createElement('option');o.value=t.name;techList.appendChild(o);
+    });
+  }
+  // Reset tech input
+  document.getElementById('na-tech').value='';
 
-  // Populate plants dropdown
-  const stateSel=document.getElementById('na-state');
-  const existingPlants=[...new Set(getHistDB().map(h=>h.state).filter(Boolean))];
-  const defaultPlants=['JURUBATUBA, POA'];
-  const allPlants=[...new Set([...existingPlants,...defaultPlants])];
-  stateSel.innerHTML='';
-  allPlants.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;stateSel.appendChild(o);});
-  const oNew=document.createElement('option');oNew.value='__new__';oNew.textContent='✏ Nova planta...';stateSel.appendChild(oNew);
+  // Estado / Planta: already fixed in HTML (JURUBATUBA / POA)
+  // No need to populate dynamically
 
   // Set values
   const normPlate=(plate||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();
@@ -2549,7 +2586,7 @@ function openNewAtendimento(plate='',model=''){
   document.getElementById('na-solution').value='';
   document.getElementById('na-km').value='';
   document.getElementById('na-status').textContent='';
-  document.getElementById('na-status-sel').value='registrado';
+  document.getElementById('na-status-sel').value='resolvido';
 
   if(normPlate) autoFillPlateModal(normPlate);
 
@@ -2560,19 +2597,36 @@ function openNewAtendimento(plate='',model=''){
 function saveAtendimento(){
   const plate=document.getElementById('na-plate').value.trim().toUpperCase();
   const model=document.getElementById('na-model').value.trim();
-  const stateRaw=document.getElementById('na-state').value;
-  const state=stateRaw==='__new__'?prompt('Nome da nova planta/estado:')||'':stateRaw;
+  const state=document.getElementById('na-state').value;
   const dtcsRaw=document.getElementById('na-dtcs').value.trim().toUpperCase();
   const solution=document.getElementById('na-solution').value.trim();
   const km=parseInt(document.getElementById('na-km').value)||null;
-  const techRaw=document.getElementById('na-tech').value;
-  const tech=techRaw==='__other__'?prompt('Nome do técnico:')||'':techRaw;
+  const tech=document.getElementById('na-tech').value.trim();
   const status=document.getElementById('na-status-sel').value;
   const naStatusEl=document.getElementById('na-status');
 
   if(!plate||!model||!dtcsRaw){
     naStatusEl.innerHTML='<span style="color:var(--red)">⚠ Placa, modelo e DTCs são obrigatórios</span>';return;
   }
+
+  // Auto-save tech to kovi_techs if not already registered
+  if(tech){
+    const techs=getTechDB();
+    if(!techs.find(t=>t.name.toLowerCase()===tech.toLowerCase())){
+      const newTech={id:'T'+Date.now(),name:tech,plant:state,role:'Técnico',active:true};
+      techs.push(newTech);
+      saveTechDB(techs);
+      // Sync to Supabase
+      if(hasSBConfig()&&SB_CONNECTED){
+        fetch(sbUrl('/rest/v1/kovi_techs'),{
+          method:'POST',
+          headers:{...getSBHeaders(),'Prefer':'resolution=merge-duplicates'},
+          body:JSON.stringify(newTech)
+        }).catch(e=>console.warn('[KOVI] Erro ao salvar técnico no SB:',e.message));
+      }
+    }
+  }
+
   const dtcs=dtcsRaw.split(/[\s,;]+/).filter(Boolean);
   const db=getHistDB();
   const dateStr=new Date().toISOString().split('T')[0];
@@ -2610,9 +2664,22 @@ function loadDemoData(){
 }
 
 function statusLabel(s){
-  const map={resolvido:'✓ Resolvido',em_andamento:'◌ Em andamento',registrado:'● Registrado',aguardando_peca:'⏳ Aguard. peça'};
-  const col={resolvido:'var(--green)',em_andamento:'var(--yellow)',registrado:'var(--muted)',aguardando_peca:'var(--orange)'};
-  return `<span style="font-size:8px;color:${col[s]||'var(--muted)'};">${map[s]||s||'—'}</span>`;
+  const map={
+    resolvido:'✅ RESOLVIDO',
+    nao_resolvido:'❌ NÃO RESOLVIDO',
+    // legacy values
+    em_andamento:'◌ Em andamento',
+    registrado:'● Registrado',
+    aguardando_peca:'⏳ Aguard. peça'
+  };
+  const col={
+    resolvido:'var(--green)',
+    nao_resolvido:'var(--red)',
+    em_andamento:'var(--yellow)',
+    registrado:'var(--muted)',
+    aguardando_peca:'var(--orange)'
+  };
+  return `<span style="font-size:8px;font-weight:600;color:${col[s]||'var(--muted)'};">${map[s]||s||'—'}</span>`;
 }
 
 /* ════════════════════════════════════════════
@@ -2790,10 +2857,11 @@ function updateSBLoadBanner(status, count=0, errMsg=''){
   }
 }
 
-/* ── Salva atendimento no Supabase também ── */
+/* ── Salva atendimento no Supabase + publica na Rede Kovi ── */
 async function saveAtendimentoToSB(item){
-  if(!hasSBConfig()||!SB_CONNECTED)return;
+  if(!hasSBConfig())return;
   try{
+    // 1. Salva no histórico local do Supabase
     await fetch(sbUrl('/rest/v1/kovi_historico'),{
       method:'POST',
       headers:{...getSBHeaders(),'Prefer':'resolution=merge-duplicates'},
@@ -2803,6 +2871,8 @@ async function saveAtendimentoToSB(item){
         dtcs:item.dtcs,solution:item.solution,km:item.km,status:item.status
       })
     });
+    // 2. Publica automaticamente na Rede Kovi (visível para todas as plantas)
+    await saveToRedeKovi(item);
   }catch(e){console.warn('[KOVI] Erro ao salvar atendimento no SB:',e.message);}
 }
 
@@ -2951,7 +3021,23 @@ CREATE TABLE IF NOT EXISTS kovi_esquemas (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 ALTER TABLE kovi_esquemas ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "allow_all" ON kovi_esquemas FOR ALL USING (true);</div>
+CREATE POLICY "allow_all" ON kovi_esquemas FOR ALL USING (true);
+
+-- 🌐 REDE KOVI (feed multi-planta ao vivo):
+CREATE TABLE IF NOT EXISTS kovi_rede (
+  id TEXT PRIMARY KEY,
+  plate TEXT, model TEXT,
+  state TEXT, tech TEXT,
+  date TEXT, dtcs TEXT[],
+  solution TEXT, km INT,
+  status TEXT,
+  published_at TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE kovi_rede ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow_all" ON kovi_rede FOR ALL USING (true);
+
+-- Índice para ordenação rápida por data:
+CREATE INDEX IF NOT EXISTS idx_rede_published ON kovi_rede(published_at DESC);</div>
 
         <div id="sql-rls" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:9px;color:var(--cyan);font-family:var(--mono);white-space:pre-wrap;line-height:1.8;max-height:220px;overflow-y:auto;">-- 1. Habilitar RLS nas tabelas (recomendado):
 ALTER TABLE frota ENABLE ROW LEVEL SECURITY;
@@ -3823,6 +3909,380 @@ function showSQL(id){
     const el=document.getElementById(s);
     if(el)el.style.display=s===id?'block':'none';
   });
+}
+
+/* ════════════════════════════════════════════
+   MASTER PASSWORD — ACESSO A ESQUEMAS
+   Hash SHA-256 da senha: KOVI@MASTER#2025DEV
+   Somente o desenvolvedor conhece a senha original.
+   Para gerar novo hash: SHA-256 da nova senha.
+════════════════════════════════════════════ */
+const MASTER_HASH='328950ec0196b57373145b39c18dc2a9134715436724cc70ea06e56a2361acac';
+
+function isMaster(){return sessionStorage.getItem('kovi_master_ok')==='1';}
+
+function openMasterAccess(){
+  if(isMaster()){
+    // Já autenticado — revogar acesso
+    sessionStorage.removeItem('kovi_master_ok');
+    updateMasterUI(false);
+    return;
+  }
+  document.getElementById('master-pw-input').value='';
+  document.getElementById('master-pw-status').textContent='';
+  document.getElementById('master-pw-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('master-pw-input').focus(),80);
+}
+
+async function checkMasterPw(){
+  const pw=document.getElementById('master-pw-input').value;
+  const st=document.getElementById('master-pw-status');
+  try{
+    const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));
+    const hash=[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+    if(hash===MASTER_HASH){
+      sessionStorage.setItem('kovi_master_ok','1');
+      document.getElementById('master-pw-modal').classList.remove('show');
+      updateMasterUI(true);
+      // Re-render esquemas com permissões master
+      const activeNi=document.querySelector('.esq-ni.active');
+      if(activeNi)activeNi.click(); else initDLCFields();
+    } else {
+      st.textContent='⚠ Senha master incorreta.';st.className='modal-status err';
+      document.getElementById('master-pw-input').value='';
+    }
+  }catch(e){st.textContent='⚠ Erro ao verificar senha.';st.className='modal-status err';}
+}
+
+function updateMasterUI(active){
+  const badge=document.getElementById('esq-master-badge');
+  const btn=document.getElementById('esq-master-btn');
+  const saveBtn=document.getElementById('esq-save-btn');
+  const saveBtnComp=document.getElementById('esq-save-btn-comp');
+  if(badge){
+    badge.style.display=active?'block':'none';
+    badge.style.background=active?'rgba(250,204,21,.15)':'';
+    badge.style.border=active?'1px solid var(--yellow)':'';
+    badge.style.color=active?'var(--yellow)':'';
+    badge.textContent=active?'✓ MASTER ATIVO':'';
+  }
+  if(btn){btn.textContent=active?'🔓 Revogar Master':'🔑 Acesso Master';
+    btn.style.borderColor=active?'var(--red)':'var(--yellow)';
+    btn.style.color=active?'var(--red)':'var(--yellow)';
+  }
+  if(saveBtn)saveBtn.style.display=active?'flex':'none';
+  if(saveBtnComp)saveBtnComp.style.display=active?'flex':'none';
+}
+
+document.getElementById('master-pw-modal').addEventListener('click',e=>{
+  if(e.target===e.currentTarget)e.currentTarget.classList.remove('show');
+});
+document.getElementById('master-pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')checkMasterPw();});
+
+/* ────────────────────────────────────────────
+   SAVE ALL ESQUEMAS TO SUPABASE (botão manual)
+   ────────────────────────────────────────── */
+async function saveAllEsqToSB(){
+  const statusEl=document.getElementById('esq-save-status')||document.getElementById('esq-save-status-comp');
+  if(!hasSBConfig()){
+    if(statusEl)statusEl.innerHTML='<span style="color:var(--red)">⚠ Configure o Supabase primeiro (Admin → Supabase)</span>';return;
+  }
+  const keys=Object.keys(S.esqImgs);
+  if(!keys.length){
+    if(statusEl)statusEl.innerHTML='<span style="color:var(--yellow)">⚠ Nenhuma imagem carregada para salvar.</span>';return;
+  }
+  if(statusEl)statusEl.innerHTML=`<span style="color:var(--cyan)">◌ Salvando ${keys.length} imagem(ns) no Supabase...</span>`;
+  let ok=0,err=0;
+  for(const key of keys){
+    try{
+      const r=await fetch(sbUrl('/rest/v1/kovi_esquemas'),{
+        method:'POST',
+        headers:{...getSBHeaders(),'Prefer':'resolution=merge-duplicates'},
+        body:JSON.stringify({id:key,image_data:S.esqImgs[key],updated_at:new Date().toISOString()})
+      });
+      if(r.ok||r.status===201)ok++;else err++;
+    }catch(e){err++;}
+  }
+  if(statusEl){
+    if(err===0){
+      statusEl.innerHTML=`<span style="color:var(--green)">✓ ${ok} imagem(ns) salva(s) com sucesso no Supabase! Todos os usuários verão ao reabrir.</span>`;
+      setTimeout(()=>{if(statusEl)statusEl.innerHTML='';},6000);
+    } else {
+      statusEl.innerHTML=`<span style="color:var(--yellow)">⚠ ${ok} salvas, ${err} com erro. Verifique conexão Supabase.</span>`;
+    }
+  }
+}
+
+/* Override buildImgField to check master separately from admin */
+/* (replaces the earlier definition) */
+function buildImgField(key,label,store){
+  const canEdit=isMaster()||sessionStorage.getItem('kovi_adm_ok')==='1';
+  const wrap=document.createElement('div');wrap.className='img-field';
+  const lbl=document.createElement('span');lbl.className='img-field-lbl';lbl.textContent=label;wrap.appendChild(lbl);
+  const fid='f-'+key.replace(/[^a-z0-9]/gi,'-');const did='d-'+key.replace(/[^a-z0-9]/gi,'-');
+  const drop=document.createElement('div');drop.className='img-drop';drop.id=did;
+
+  if(S[store][key]){
+    renderEsqFilled(drop,key,store,fid,S[store][key],canEdit);
+  } else if(canEdit){
+    const finp=document.createElement('input');finp.type='file';finp.accept='image/*';finp.className='hidden-file';finp.id=fid;
+    finp.addEventListener('change',e=>loadEsqImg(e,key,store,did,fid));
+    wrap.appendChild(finp);
+    drop.innerHTML=`<div class="img-ph"><div class="img-plus">+</div><div class="img-lbl">INSERIR IMAGEM</div><div class="img-hint">${isMaster()?'Master ativo':'Admin'} — clique para selecionar</div></div>`;
+    drop.onclick=()=>finp.click();
+  } else {
+    drop.innerHTML=`<div class="img-ph"><div class="img-plus" style="color:var(--dim2);font-size:16px;">🔒</div><div class="img-lbl" style="color:var(--dim2);">SEM IMAGEM</div><div class="img-hint">Inserção restrita ao desenvolvedor master</div></div>`;
+  }
+  wrap.appendChild(drop);return wrap;
+}
+
+/* ════════════════════════════════════════════
+   REDE KOVI — SINCRONIZAÇÃO MULTI-PLANTA
+════════════════════════════════════════════ */
+/* Salva atendimento na tabela kovi_rede (visível para todas as plantas) */
+async function saveToRedeKovi(item){
+  if(!hasSBConfig())return;
+  try{
+    await fetch(sbUrl('/rest/v1/kovi_rede'),{
+      method:'POST',
+      headers:{...getSBHeaders(),'Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({
+        id:item.id,plate:item.plate,model:item.model,
+        state:item.state,tech:item.tech,date:item.date,
+        dtcs:item.dtcs,solution:item.solution,km:item.km,
+        status:item.status,published_at:new Date().toISOString()
+      })
+    });
+    console.log('[KOVI] Atendimento publicado na Rede Kovi.');
+  }catch(e){console.warn('[KOVI] Erro ao publicar na Rede Kovi:',e.message);}
+}
+
+/* Carrega feed da Rede Kovi */
+async function loadRedeKovi(){
+  const root=document.getElementById('rede-root');
+  if(!root)return;
+  root.innerHTML=`<div style="text-align:center;padding:40px;color:var(--dim2);font-size:9px;letter-spacing:1px;">◌ Carregando Rede Kovi...</div>`;
+  if(!hasSBConfig()){
+    root.innerHTML=renderRedeEmpty('Configure o Supabase para ver a Rede Kovi em tempo real.');
+    return;
+  }
+  try{
+    const r=await fetch(sbUrl('/rest/v1/kovi_rede?select=*&order=published_at.desc&limit=100'),{headers:getSBHeaders()});
+    if(!r.ok){
+      // Tabela pode não existir ainda
+      root.innerHTML=renderRedeEmpty('Tabela kovi_rede não encontrada. Execute o SQL em Admin → Supabase → NOVAS TABELAS.');
+      return;
+    }
+    const items=await r.json();
+    renderRedeKovi(items,root);
+  }catch(e){
+    // Fallback: mostrar histórico local
+    const local=getHistDB();
+    renderRedeKovi(local,root,true);
+  }
+}
+
+function renderRedeEmpty(msg){
+  return`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;text-align:center;">
+    <div style="font-size:48px;opacity:.25;">🌐</div>
+    <div style="font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Rede Kovi</div>
+    <div style="font-size:10px;color:var(--dim2);max-width:400px;line-height:2;">${msg}</div>
+    <button onclick="loadRedeKovi()" class="dash-refresh" style="margin-top:8px;">↺ Tentar novamente</button>
+  </div>`;
+}
+
+function renderRedeKovi(items,root,isLocal=false){
+  if(!items||!items.length){root.innerHTML=renderRedeEmpty('Nenhum atendimento publicado na rede ainda.');return;}
+  const allCodes={};items.forEach(h=>h.dtcs?.forEach(d=>{allCodes[d]=(allCodes[d]||0)+1;}));
+  const byState={};items.forEach(h=>{if(!byState[h.state])byState[h.state]=0;byState[h.state]++;});
+  const topDTCs=Object.entries(allCodes).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const now=new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+
+  root.innerHTML=`
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-size:22px;color:var(--cyan);font-weight:700;letter-spacing:3px;">🌐 REDE KOVI</div>
+      <div style="font-size:8px;color:var(--dim2);">${isLocal?'Dados locais':'Supabase ao vivo'} · ${now}</div>
+      ${isLocal?`<span style="font-size:8px;padding:2px 8px;border:1px solid var(--yellow);color:var(--yellow);border-radius:3px;">MODO LOCAL</span>`:'<span style="font-size:8px;padding:2px 8px;border:1px solid var(--green);color:var(--green);border-radius:3px;">● AO VIVO</span>'}
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="loadRedeKovi()" class="dash-refresh">↺ Atualizar</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+    <div class="kpi-card cyan"><div class="kpi-icon">📋</div><div class="kpi-num" style="color:var(--cyan)">${items.length}</div><div class="kpi-lbl">Atendimentos</div></div>
+    <div class="kpi-card green"><div class="kpi-icon">✅</div><div class="kpi-num" style="color:var(--green)">${items.filter(h=>h.status==='resolvido').length}</div><div class="kpi-lbl">Resolvidos</div></div>
+    <div class="kpi-card red"><div class="kpi-icon">❌</div><div class="kpi-num" style="color:var(--red)">${items.filter(h=>h.status==='nao_resolvido').length}</div><div class="kpi-lbl">Não resolvidos</div></div>
+    <div class="kpi-card purple"><div class="kpi-icon">🌐</div><div class="kpi-num" style="color:var(--purple)">${Object.keys(byState).length}</div><div class="kpi-lbl">Plantas</div></div>
+  </div>
+
+  <!-- Top DTCs na rede -->
+  ${topDTCs.length?`<div class="dash-card" style="margin-bottom:16px;">
+    <div class="dash-card-title"><div class="dash-card-title-left"><span>⚡</span><span style="color:var(--red);">DTCs mais frequentes na Rede</span></div></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      ${topDTCs.map(([code,cnt])=>`<div onclick="goToDTC('${code}')" style="padding:6px 14px;border:1px solid ${cnt>=3?'var(--red)':'var(--border2)'};border-radius:6px;cursor:pointer;background:${cnt>=3?'rgba(239,68,68,.06)':'var(--card)'};transition:all .15s;">
+        <span style="color:${cnt>=3?'var(--red)':'var(--cyan)'};font-weight:700;font-size:12px;">${code}</span>
+        <span style="font-size:8px;color:var(--dim2);margin-left:6px;">${cnt}x</span>
+      </div>`).join('')}
+    </div>
+  </div>`:''}
+
+  <!-- Feed ao vivo -->
+  <div class="dash-card">
+    <div class="dash-card-title"><div class="dash-card-title-left"><span>📡</span><span style="color:var(--cyan);">Feed Multi-Planta — ${items.length} atendimentos</span></div></div>
+    <div style="max-height:600px;overflow-y:auto;">
+      ${items.map(h=>{
+        const recDTCs=h.dtcs?.filter(d=>allCodes[d]>1)||[];
+        const isResolved=h.status==='resolvido';
+        return`<div class="dash-row" onclick="goToPlate('${h.plate}')" style="align-items:flex-start;padding:10px 8px;gap:10px;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;margin-top:2px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${isResolved?'var(--green)':'var(--red)'};box-shadow:0 0 6px ${isResolved?'var(--green)':'var(--red)'}60;"></div>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+              <div>
+                <span style="color:var(--orange);font-weight:700;font-size:12px;">${h.plate}</span>
+                <span style="color:var(--muted);font-size:9px;margin-left:8px;">${(h.model||'').substring(0,30)}</span>
+              </div>
+              <div style="text-align:right;font-size:8px;flex-shrink:0;">
+                <div style="color:var(--dim2);">${h.date||''}</div>
+                <div style="color:var(--purple);">${h.state||''}</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px;">
+              ${h.dtcs?.map(d=>`<span style="padding:1px 7px;border-radius:3px;border:1px solid ${allCodes[d]>1?'rgba(239,68,68,.5)':'var(--border2)'};font-size:8px;color:${allCodes[d]>1?'var(--red)':'var(--muted)'};">${d}</span>`).join('')||''}
+              <span style="font-size:8px;font-weight:600;color:${isResolved?'var(--green)':'var(--red)'};margin-left:4px;">${isResolved?'✅ RESOLVIDO':'❌ NÃO RESOLVIDO'}</span>
+            </div>
+            ${h.solution?`<div style="font-size:9px;color:var(--muted);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:600px;">${escH(h.solution.substring(0,120))}${h.solution.length>120?'...':''}</div>`:''}
+            ${h.tech?`<div style="font-size:8px;color:var(--dim2);margin-top:3px;">👤 ${escH(h.tech)}</div>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+/* ════════════════════════════════════════════
+   AGENTE IA — AUTO-APRENDIZADO DO HISTÓRICO
+   Analisa padrões de atendimentos resolvidos e
+   não resolvidos para gerar diagnóstico inteligente
+════════════════════════════════════════════ */
+
+/* Constrói contexto de aprendizado baseado no histórico completo */
+function buildAILearningContext(codes){
+  const db=getHistDB();
+  if(!db.length)return'';
+
+  // Separar resolvidos vs não resolvidos
+  const resolved=db.filter(h=>h.status==='resolvido'&&h.solution);
+  const unresolved=db.filter(h=>h.status==='nao_resolvido');
+
+  // Filtrar por DTCs relevantes
+  const relevantResolved=resolved.filter(h=>h.dtcs?.some(d=>codes.includes(d)));
+  const relevantUnresolved=unresolved.filter(h=>h.dtcs?.some(d=>codes.includes(d)));
+
+  // Todos os atendimentos para análise de padrão geral
+  const allRelevant=[...relevantResolved,...relevantUnresolved];
+
+  if(!allRelevant.length)return'';
+
+  let ctx='\n\n═══ MEMÓRIA DO AGENTE (histórico real da frota) ═══\n';
+
+  if(relevantResolved.length){
+    ctx+=`\n✅ CASOS RESOLVIDOS (${relevantResolved.length}):\n`;
+    relevantResolved.forEach((h,i)=>{
+      ctx+=`${i+1}. [${h.state}] ${h.plate} (${h.model}) — ${h.date}\n`;
+      ctx+=`   DTCs: ${h.dtcs?.join(', ')}\n`;
+      ctx+=`   Solução: ${h.solution?.substring(0,200)||'—'}\n`;
+    });
+  }
+
+  if(relevantUnresolved.length){
+    ctx+=`\n❌ CASOS NÃO RESOLVIDOS (${relevantUnresolved.length}):\n`;
+    relevantUnresolved.forEach((h,i)=>{
+      ctx+=`${i+1}. [${h.state}] ${h.plate} (${h.model}) — ${h.date}\n`;
+      ctx+=`   DTCs: ${h.dtcs?.join(', ')}\n`;
+      ctx+=`   Tentativa: ${h.solution?.substring(0,150)||'Nenhuma registrada'}\n`;
+    });
+  }
+
+  // Análise de frequência de DTCs
+  const freqMap={};db.forEach(h=>h.dtcs?.forEach(d=>{freqMap[d]=(freqMap[d]||0)+1;}));
+  const freqCodes=codes.filter(c=>freqMap[c]).map(c=>`${c}(${freqMap[c]}x)`);
+  if(freqCodes.length){
+    ctx+=`\n📊 FREQUÊNCIA NA FROTA: ${freqCodes.join(', ')}\n`;
+  }
+
+  ctx+=`\nBASEADO NESTE HISTÓRICO REAL, gere diagnóstico priorizando as soluções que já funcionaram.`;
+  ctx+=`\nSe um caso foi NÃO RESOLVIDO, mencione o que já foi tentado para evitar repetição.\n`;
+  ctx+='════════════════════════════════════════════\n';
+
+  return ctx;
+}
+
+/* IA Adaptativa — versão melhorada com agente que aprende */
+async function regenIAAdaptive(code){
+  const apiKey=loadApiKey();
+  const btn=document.getElementById('btn-regen');const blk=document.getElementById('expl-block');
+  if(!apiKey){blk.innerHTML='<span style="color:var(--red)">⚠ Configure sua chave da API (barra superior)</span>';return;}
+  btn.textContent='◌ Analisando histórico + IA...';btn.classList.add('loading');btn.disabled=true;
+
+  const data=lookupDTC(code);
+  const vLabel=S.vehicle?.label||'Veículo não identificado';
+  const allCodes=S.session.map(x=>x.code);
+  const learningCtx=buildAILearningContext(allCodes);
+  const drawioCtx=S.drawioLoaded?`\n\nEsquema elétrico draw.io fornecido (${Math.round((S.drawioXML||'').length/1024)}KB).`:'';
+
+  const prompt=`Você é um AGENTE DE DIAGNÓSTICO AUTOMOTIVO especializado em frotas Kovi.
+Você tem acesso ao histórico REAL de atendimentos da frota.
+
+VEÍCULO: ${vLabel}
+CÓDIGO PRINCIPAL: ${code} — ${data?.d||''}
+SISTEMA: ${data?.si||'—'} | SEVERIDADE: ${data?.se||'—'}
+DEMAIS CÓDIGOS NA SESSÃO: ${allCodes.filter(c=>c!==code).join(', ')||'Nenhum'}
+${learningCtx}${drawioCtx}
+
+INSTRUÇÕES DO AGENTE:
+1. Analise o histórico real para identificar a MELHOR ROTA DE DIAGNÓSTICO
+2. Se existem casos RESOLVIDOS similares, priorize a solução que funcionou
+3. Se existem casos NÃO RESOLVIDOS, alerte o técnico sobre o que JÁ foi tentado
+4. Gere diagnóstico técnico em português com:
+
+## ⚡ DIAGNÓSTICO TÉCNICO — ${code}
+### Explicação do código
+### Sintomas esperados (lista)
+### Causas prováveis (lista por probabilidade)
+
+## 🧠 ROTA RECOMENDADA PELO AGENTE
+(Baseada no histórico real da frota — caminho mais eficiente)
+Passo a passo detalhado com ferramentas, valores esperados e pontos de medição.
+
+## 📊 PADRÃO DA FROTA
+(O que o histórico revelou sobre este código)
+
+## ⚠ ATENÇÃO — NÃO REPITA
+(Se houve casos não resolvidos, o que já foi tentado sem sucesso)
+
+Seja preciso, técnico e direto. Priorize o que funcionou na frota.`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+    });
+    const d=await resp.json();
+    if(d.error)blk.innerHTML=`<span style="color:var(--red)">⚠ ${escH(d.error.message)}</span>`;
+    else{
+      const txt=d.content?.[0]?.text||'';
+      S.aiCache[code]=txt;
+      const hasHistory=buildAILearningContext([code]).length>0;
+      blk.innerHTML=`${hasHistory?'<div style="font-size:8px;color:var(--green);letter-spacing:1px;margin-bottom:8px;padding:4px 8px;border:1px solid var(--green);border-radius:3px;display:inline-block;">🧠 AGENTE ATIVO — Análise baseada no histórico real da frota</div><br/>':''}
+      <span style="white-space:pre-wrap">${escH(txt)}</span>`;
+    }
+  }catch(err){blk.innerHTML=`<span style="color:var(--red)">⚠ ${escH(err.message)}</span>`;}
+  btn.textContent='⚡ Analisar com IA';btn.classList.remove('loading');btn.disabled=false;
 }
 
 /* ════════════════════════════════════════════
